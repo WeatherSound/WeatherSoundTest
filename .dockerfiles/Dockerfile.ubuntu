@@ -1,0 +1,46 @@
+# docker build -t <사용할 이미지 이름> <프로젝트 경로> -f <dockerfile이 존재하는 경로>
+# docker build -t [eb_ubuntu] [.] -f [.dockerfiles/dockerfile.ubuntu]
+
+# ubuntu 설치 ( 원래는 배포용 유저를 만들어야함. 여기서는 root로 작업함 )
+FROM        ubuntu:16.04
+MAINTAINER  qufskan9396@gmail.com
+
+# 필요한소스설치 (-y는 자동으로 y를 눌러줌)
+RUN         apt-get -y update
+RUN         apt-get install -y python-pip
+RUN         apt-get install -y git vim
+
+# pyenv 설치
+RUN         apt-get install -y make build-essential libssl-dev zlib1g-dev libbz2-dev \
+libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils
+RUN         curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash
+ENV         PATH /root/.pyenv/bin:$PATH
+
+# python 설치
+RUN         pyenv install 3.6.1
+
+# zsh 설치, 적용
+RUN         apt-get -y install zsh
+RUN         wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true
+RUN         chsh -s /usr/bin/zsh
+
+# pyenv settings
+RUN         echo '\n# pyenv\n' >> ~/.zshrc
+RUN         echo 'export PATH="/home/ubuntu/.pyenv/bin:$PATH"\n' >> ~/.zshrc
+RUN         echo 'eval "$(pyenv init -)"\n' >> ~/.zshrc
+RUN         echo 'eval "$(pyenv virtualenv-init -)"\n' >> ~/.zshrc
+
+# pyenv virtualenv
+RUN         pyenv virtualenv 3.6.1 weathersound
+
+# uwsgi install
+RUN         /root/.pyenv/versions/weathersound/bin/pip install uwsgi
+
+# Nginx install
+RUN         apt-get update
+RUN         apt-get -y install nginx
+
+# Superviser
+RUN         apt-get -y install supervisor
+
+EXPOSE      4567

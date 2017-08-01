@@ -1,0 +1,12 @@
+certifi==2017.7.27.1
+chardet==3.0.4
+Django==1.11.3
+django-extensions==1.8.1
+djangorestframework==3.6.3
+idna==2.5
+olefile==0.44
+Pillow==4.2.1
+pytz==2017.2
+requests==2.18.2
+six==1.10.0
+urllib3==1.22
