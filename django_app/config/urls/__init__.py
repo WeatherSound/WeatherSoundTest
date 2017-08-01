@@ -7,7 +7,7 @@ urlpatterns = [
     url(r'', include(urls_views)),
     url(r'^api/', include(urls_apis)),
     # rest api 로그인용 url
-    url(r'^api-auth/', include('rest-framework.urls',
+    url(r'^api-auth/', include('rest_framework.urls',
                                namespace='rest_framework')),
 
 ]

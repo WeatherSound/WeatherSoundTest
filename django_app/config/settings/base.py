@@ -47,6 +47,8 @@ EMAIL_HOST_PASSWORD = config_secret_common['email_confirm']['email_password']
 EMAIL_PORT = 587
 
 
+AUTH_USER_MODEL = 'member.MyUser'
+
 # Application definition
 
 INSTALLED_APPS = [
