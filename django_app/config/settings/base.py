@@ -59,6 +59,8 @@ INSTALLED_APPS = [
 
     ### Custom ###
     'member',
+    'music',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
