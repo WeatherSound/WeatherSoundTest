@@ -369,3 +369,8 @@ xcuserdata/
 /*.gcno
 
 # End of https://www.gitignore.io/api/xcode,linux
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

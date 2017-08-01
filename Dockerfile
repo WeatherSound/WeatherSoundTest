@@ -1,5 +1,7 @@
 FROM        pignu/eb_weathersound
-MAINTAINER  qufskan9396@gmail.com
+MAINTAINER  hanyul.ryu@gmail.com
+
+ENV         LANG C.UTF-8
 
 # 컨테이너 내 복사
 COPY        . /srv/weathersound

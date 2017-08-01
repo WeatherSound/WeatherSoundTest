@@ -65,6 +65,8 @@ INSTALLED_APPS = [
     'member',
     'music',
     'rest_framework',
+
+    # "django_extensions",
 ]
 
 MIDDLEWARE = [
