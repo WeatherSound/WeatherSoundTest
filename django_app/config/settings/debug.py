@@ -1,5 +1,6 @@
 from .base import *
 
+# debug for deploy file settings
 config_secret_debug = json.loads(open(CONFIG_SECRET_DEBUG_FILE).read())
 
 WSGI_APPLICATION = 'config.wsgi.debug.application'
@@ -17,11 +18,9 @@ STATIC_ROOT = os.path.join(ROOT_DIR, '.static_root')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(ROOT_DIR, '.media')
 
-
 # 서버 실행시 구별용 출력
 print('@@@@@@@@@@ DEBUG: ', DEBUG)
 print('@@@@@@@@@@ ALLOWED_HOSTS: ', ALLOWED_HOSTS)
-
 
 # debug - sqlite3
 DATABASES = {

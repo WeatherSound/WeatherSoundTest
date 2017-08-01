@@ -22,13 +22,12 @@ TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
 
 # Secret Files
 CONFIG_SECRET_DIR = os.path.join(ROOT_DIR, '.config_secret')
+
 CONFIG_SECRET_COMMON_FILE = os.path.join(CONFIG_SECRET_DIR, 'settings_common.json')
-CONFIG_SECRET_DEPLOY_FILE = os.path.join(CONFIG_SECRET_DIR, 'settings_deploy.json')
 CONFIG_SECRET_DEBUG_FILE = os.path.join(CONFIG_SECRET_DIR, 'settings_debug.json')
+CONFIG_SECRET_DEPLOY_FILE = os.path.join(CONFIG_SECRET_DIR, 'settings_deploy.json')
 
 config_secret_common = json.loads(open(CONFIG_SECRET_COMMON_FILE).read())
-config_secret_deploy = json.loads(open(CONFIG_SECRET_DEPLOY_FILE).read())
-config_secret_debug = json.loads(open(CONFIG_SECRET_DEBUG_FILE).read())
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
@@ -37,7 +36,11 @@ config_secret_debug = json.loads(open(CONFIG_SECRET_DEBUG_FILE).read())
 SECRET_KEY = config_secret_common['django']['secret_key']
 GOOGLE_API_KEY = config_secret_common['google']['geocoding_api_key']
 DARKSKY_API_KEY = config_secret_common['weatherinfo']['darksky_api_key']
+
+###
+# FACEBOOK
 FACEBOOK_API_KEY = config_secret_common['facebook']['facebook_api_key']
+FACEBOOK_API_SECRET_CODE = config_secret_common["facebook"]["facebook_api_secret_code"]
 
 # EMAIL CONFIRM Verification Info
 EMAIL_USE_TLS = True
@@ -45,7 +48,6 @@ EMAIL_HOST = config_secret_common['email_confirm']['email_host']
 EMAIL_HOST_USER = config_secret_common['email_confirm']['email_account']
 EMAIL_HOST_PASSWORD = config_secret_common['email_confirm']['email_password']
 EMAIL_PORT = 587
-
 
 AUTH_USER_MODEL = 'member.MyUser'
 
@@ -97,7 +99,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
@@ -116,7 +117,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
@@ -129,7 +129,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/

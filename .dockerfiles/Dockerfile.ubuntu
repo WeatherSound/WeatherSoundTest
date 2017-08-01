@@ -37,7 +37,10 @@ RUN         pyenv virtualenv 3.6.1 weathersound
 RUN         /root/.pyenv/versions/weathersound/bin/pip install uwsgi
 
 # Nginx install
-RUN         apt-get update
+RUN         apt-get -y update
+# -y 옵션 빠짐
+RUN         apt-get -y upgrade
+# update해주면 upgrade도 해주는게 인지상정
 RUN         apt-get -y install nginx
 
 # Superviser

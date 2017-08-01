@@ -3,7 +3,82 @@
 .static_root/
 .media/
 .config_secret/
-db.sqlite3
+
+
+# Created by https://www.gitignore.io/api/c,c++,vim,sass,macos,python,django,pycharm,windows,elasticbeanstalk
+
+### C ###
+# Prerequisites
+*.d
+
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Linker output
+*.ilk
+*.map
+*.exp
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Kernel Module Compile Results
+*.mod*
+*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+Mkfile.old
+dkms.conf
+
+### C++ ###
+# Prerequisites
+
+# Compiled Object files
+*.slo
+
+# Precompiled Headers
+
+# Compiled Dynamic libraries
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+
+# Executables
 
 ### Django ###
 *.log
@@ -11,28 +86,15 @@ db.sqlite3
 *.pyc
 __pycache__/
 local_settings.py
-django_app/db.sqlite3
+db.sqlite3
 media
 
 # If your build process includes running collectstatic, then you probably don't need or want to include staticfiles/
 # in your Git repository. Update and uncomment the following line accordingly.
 # <django-project-name>/staticfiles/
 
-### Linux ###
-*~
-
-# temporary files which can be created if a process still has a handle open of a deleted file
-.fuse_hidden*
-
-# KDE directory preferences
-.directory
-
-# Linux trash folder which might appear on any partition or disk
-.Trash-*
-
-# .nfs files are created when an open file is removed but is still being accessed
-.nfs*
-
+### ElasticBeanstalk ###
+.elasticbeanstalk/
 ### macOS ###
 *.DS_Store
 .AppleDouble
@@ -128,7 +190,6 @@ fabric.properties
 *$py.class
 
 # C extensions
-*.so
 
 # Distribution / packaging
 .Python
@@ -232,6 +293,7 @@ ENV/
 Session.vim
 # temporary
 .netrwhist
+*~
 # auto-generated tag files
 tags
 
@@ -256,40 +318,4 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-### Xcode ###
-# Xcode
-#
-# gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
-
-## Build generated
-DerivedData/
-
-## Various settings
-*.pbxuser
-!default.pbxuser
-*.mode1v3
-!default.mode1v3
-*.mode2v3
-!default.mode2v3
-*.perspectivev3
-!default.perspectivev3
-xcuserdata/
-
-## Other
-*.moved-aside
-*.xccheckout
-*.xcscmblueprint
-
-### Xcode Patch ###
-*.xcodeproj/*
-!*.xcodeproj/project.pbxproj
-!*.xcodeproj/xcshareddata/
-!*.xcworkspace/contents.xcworkspacedata
-/*.gcno
-
-# End of https://www.gitignore.io/api/vim,sass,xcode,linux,macos,django,python,pycharm,windows
-
-# Elastic Beanstalk Files
-.elasticbeanstalk/*
-!.elasticbeanstalk/*.cfg.yml
-!.elasticbeanstalk/*.global.yml
+# End of https://www.gitignore.io/api/c,c++,vim,sass,macos,python,django,pycharm,windows,elasticbeanstalk

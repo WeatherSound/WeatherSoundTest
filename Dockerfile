@@ -1,4 +1,4 @@
-FROM        eb_weathersound
+FROM        pignu/eb_weathersound
 MAINTAINER  qufskan9396@gmail.com
 
 # 컨테이너 내 복사
