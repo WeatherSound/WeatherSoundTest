@@ -5,7 +5,9 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^music/', include('music.urls.urls_views')),
+    url(r'^music/', include('music.urls.urls_views'), name="music"),
+    url(r"^member/", include("member.urls.urls_views"), name="member"),
+
 ]
 
 urlpatterns += static(
