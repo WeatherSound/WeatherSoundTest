@@ -24,7 +24,6 @@ class Music(models.Model):
         max_length=256,
         null=False,
         blank=False,
-        unique=True,
     )
     # file_music = models.FileField(upload_to='music')
     source_music = models.CharField(  # 음악 파일 저장된 위치 주소 리턴
