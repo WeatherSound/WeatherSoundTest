@@ -95,7 +95,7 @@ class Weather(models.Model):
     #     import time
     #     # TODO 요청을 보낸 시간만 추출하여 1시간이 지났으면 날씨정보 업데이트
     #     cur_hour = time.gmtime(current.time).tm_hour
-    #     if abs(cur_hour - self.time_saved.hour) > 1:
+    #     if cur_hour - self.time_saved.hour != 0:
     #         self.get_weather_info()
     #     cur_icon = current.icon
     #     self.weather = cur_icon
