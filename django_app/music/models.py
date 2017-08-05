@@ -30,17 +30,29 @@ class Music(models.Model):
         max_length=256,
         null=False,
         blank=False,
-        unique=True,
+        # unique=True,
     )
-    name_music = models.CharField(max_length=100)
-    name_artist = models.CharField(max_length=100)
-    name_album = models.CharField(max_length=100, blank=True)
+    name_music = models.CharField(
+        max_length=100,
+    )
+    name_artist = models.CharField(
+        max_length=100,
+    )
+    name_album = models.CharField(
+        max_length=100,
+        blank=True,
+    )
 
-    sunny = models.PositiveIntegerField(verbose_name='맑음', default=0)
-    foggy = models.PositiveIntegerField(verbose_name='안개', default=0)
-    rainy = models.PositiveIntegerField(verbose_name='비', default=0)
-    cloudy = models.PositiveIntegerField(verbose_name='흐림', default=0)
-    snowy = models.PositiveIntegerField(verbose_name='눈', default=0)
+    sunny = models.PositiveIntegerField(
+        verbose_name='맑음', default=0)
+    foggy = models.PositiveIntegerField(
+        verbose_name='안개', default=0)
+    rainy = models.PositiveIntegerField(
+        verbose_name='비', default=0)
+    cloudy = models.PositiveIntegerField(
+        verbose_name='흐림', default=0)
+    snowy = models.PositiveIntegerField(
+        verbose_name='눈', default=0)
 
     def __str__(self):
         return self.name_music
