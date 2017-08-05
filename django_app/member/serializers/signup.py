@@ -58,7 +58,7 @@ class UserSignupSerializers(serializers.Serializer):
     def save(self):
         user = User.objects.create_user(
             email=self.validated_data.get('email_account'),
-            username=self.validated_data.get('username'),
+            username=self.validated_data.get('nickname'),
             password=self.validated_data.get('password1'),
             # TODO 계정활성화 메일 보낼 시 is_active는 False로 돌릴 것.
             is_active=True
