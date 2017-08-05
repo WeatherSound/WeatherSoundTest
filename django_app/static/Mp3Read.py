@@ -1,5 +1,4 @@
 import os
-
 import eyed3
 
 # TODO 반드시 리팩터링!!!!!!!!
