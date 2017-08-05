@@ -11,6 +11,10 @@ urlpatterns = [
         apis.CustomAuthTokenView.as_view(),
         name='login'
         ),
+    url(r'^logout/$',
+        apis.UserLogoutView.as_view(),
+        name='logout'
+        ),
     url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
         apis.AccountActivationView.as_view(),
         name='activate'),
