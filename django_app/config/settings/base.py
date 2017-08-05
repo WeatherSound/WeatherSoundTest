@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'member',
     'music',
     'rest_framework',
+    'rest_framework.authtoken'
 
     # "django_extensions",
 ]

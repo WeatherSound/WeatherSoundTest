@@ -12,7 +12,7 @@ class MyUserAdmin(UserAdmin):
     form = UserChangeForm
     add_form = UserCreateForm
     fieldsets = (
-        (None, {'fields': ('email', 'nickname', 'img_profile', 'password')}),
+        (None, {'fields': ('email', 'username', 'img_profile', 'password')}),
         (_('Personal info'), {'fields': ('email',)}),
         (_('Permissions'), {'fields': ('is_active', 'is_admin', 'is_superuser')}),
     )
@@ -21,14 +21,14 @@ class MyUserAdmin(UserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'nickname', 'img_profile', 'password1', 'password2'),
+            'fields': ('email', 'username', 'img_profile', 'password1', 'password2'),
         }),
     )
 
-    list_display = ('email', 'nickname', 'img_profile', 'is_admin', 'is_active')
+    list_display = ('email', 'username', 'img_profile', 'is_admin', 'is_active')
     list_filter = ('is_admin',)
-    search_fields = ('nickname', 'email')
-    ordering = ('nickname',)
+    search_fields = ('username', 'email')
+    ordering = ('username',)
     filter_horizontal = ('user_permissions',)
 
 
@@ -36,3 +36,4 @@ admin.site.register(MyUser, MyUserAdmin)
 admin.site.register(Playlist)
 admin.site.unregister(Group)
 admin.site.register(PlaylistMusics)
+

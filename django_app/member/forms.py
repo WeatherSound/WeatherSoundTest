@@ -14,7 +14,7 @@ class UserCreateForm(UserCreationForm):
         fields = (
             'email',
             'img_profile',
-            "nickname",
+            "username",
             'password1',
             'password2',
             # 'is_active',
@@ -42,7 +42,7 @@ class UserChangeForm(forms.ModelForm):
             'email',
             'img_profile',
             'password',
-            "nickname",
+            "username",
             # 'is_active',
             # 'is_admin',
         )
@@ -86,7 +86,7 @@ class SignupForm(forms.Form):
 
     def clean_nickname(self):
         nickname = self.cleaned_data.get('nickname')
-        if nickname and User.objects.filter(nickname=nickname).exists():
+        if nickname and User.objects.filter(username=nickname).exists():
             raise forms.ValidationError(
                 'Nickname already exists'
             )
@@ -116,7 +116,7 @@ class SignupForm(forms.Form):
         nickname = self.cleaned_data['nickname']
         user = User.objects.create_user(
             email=email,
-            nickname=nickname,
+            username=nickname,
             password=password,
             is_active=False,
         )
