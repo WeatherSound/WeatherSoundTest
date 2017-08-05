@@ -16,12 +16,11 @@ urlpatterns = [
         apis.UserLogoutView.as_view(),
         name='logout'
         ),
+    url(r'^(?P<user_pk>\d+)/edit/password/$',
+        apis.UserPasswordUpdateView.as_view(),
+        name='edit_password'
+        ),
     url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
         apis.AccountActivationView.as_view(),
         name='activate'),
-
-    # url(r'^signup/$', views.signup, name='signup'),
-    # url(r'^login/$', views.login, name='login'),
-    # url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
-    #   views.activate, name='activate')
 ]

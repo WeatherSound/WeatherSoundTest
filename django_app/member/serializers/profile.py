@@ -7,10 +7,12 @@ User = get_user_model()
 
 __all__ = (
     'UserListSerializers',
+    'UserPasswordUpdateSerializers',
 )
 
 
 class UserListSerializers(serializers.ModelSerializer):
+
     class Meta:
         model = User
         fields = (
@@ -21,6 +23,16 @@ class UserListSerializers(serializers.ModelSerializer):
             'is_active',
             'is_admin',
         )
+
+
+# class UserUpdateSerializers(serializers.ModelSerializer):
+#     class Meta:
+#         model = User
+#         fields = (
+#             'email',
+#             'username',
+#             'img_profile',
+#         )
 
 
 class UserPasswordUpdateSerializers(serializers.ModelSerializer):
