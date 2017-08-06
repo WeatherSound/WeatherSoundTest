@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.models import Group
 from django.utils.translation import ugettext_lazy as _
+from rest_framework.authtoken.admin import TokenAdmin
 
 from music.models import Playlist, PlaylistMusics
 from .forms import UserChangeForm, UserCreateForm
@@ -32,8 +32,9 @@ class MyUserAdmin(UserAdmin):
     filter_horizontal = ('user_permissions',)
 
 
+# Admin - Token 페이지에 user 정보 표시
+TokenAdmin.raw_id_fields = ('user',)
+
 admin.site.register(MyUser, MyUserAdmin)
 admin.site.register(Playlist)
-admin.site.unregister(Group)
 admin.site.register(PlaylistMusics)
-

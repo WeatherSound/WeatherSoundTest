@@ -61,6 +61,5 @@ class UserSignupSerializers(serializers.Serializer):
             username=self.validated_data.get('nickname'),
             password=self.validated_data.get('password1'),
             # TODO 계정활성화 메일 보낼 시 is_active는 False로 돌릴 것.
-            is_active=True
         )
         return user

@@ -62,7 +62,7 @@ class SignupForm(forms.Form):
             }
         )
     )
-    nickname = forms.CharField(
+    username = forms.CharField(
         widget=forms.TextInput(
             attrs={
                 'placeholder': '유일해야 합니다.'
@@ -84,13 +84,13 @@ class SignupForm(forms.Form):
         )
     )
 
-    def clean_nickname(self):
-        nickname = self.cleaned_data.get('nickname')
-        if nickname and User.objects.filter(username=nickname).exists():
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if username and User.objects.filter(username=username).exists():
             raise forms.ValidationError(
                 'Nickname already exists'
             )
-        return nickname
+        return username
 
     def clean_password2(self):
         password1 = self.cleaned_data.get('password1')
@@ -113,10 +113,10 @@ class SignupForm(forms.Form):
     def create_user(self):
         email = self.cleaned_data['email']
         password = self.cleaned_data['password1']
-        nickname = self.cleaned_data['nickname']
+        username = self.cleaned_data['username']
         user = User.objects.create_user(
             email=email,
-            username=nickname,
+            username=username,
             password=password,
             is_active=False,
         )

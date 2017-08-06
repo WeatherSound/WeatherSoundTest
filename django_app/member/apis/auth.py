@@ -33,8 +33,10 @@ class CustomAuthTokenView(APIView):
             'user': unicode(request.user),
             'auth': unicode(request.auth),
         }
-        return Response(content,
-                        status=status.HTTP_200_OK)
+        return Response(
+            content,
+            status=status.HTTP_200_OK
+        )
 
     def post(self, request, format=None, *args, **kwargs):
         """
@@ -45,6 +47,7 @@ class CustomAuthTokenView(APIView):
         user = serializer.validated_data['user']
         token, created = Token.objects.get_or_create(user=user)
         content = {
+            'pk': user.pk,
             'token': token.key,
             'email': user.email,
         }
