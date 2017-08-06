@@ -41,6 +41,13 @@ class UserRetrieveUpdateDestroySerializers(serializers.ModelSerializer):
             'email',
         )
 
+    def validate(self, attrs):
+        pk = attrs.get('pk')
+        if not pk:
+            raise serializers.ValidationError(
+                _('User doesn\'t exist')
+            )
+
 
 class UserPasswordUpdateSerializers(serializers.ModelSerializer):
     new_password1 = serializers.CharField(
