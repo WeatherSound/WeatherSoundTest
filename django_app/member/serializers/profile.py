@@ -7,6 +7,7 @@ User = get_user_model()
 
 __all__ = (
     'UserListSerializers',
+    'UserRetrieveUpdateDestroySerializers',
     'UserPasswordUpdateSerializers',
 )
 
@@ -16,6 +17,7 @@ class UserListSerializers(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
+            'pk',
             'email',
             'username',
             'img_profile',
@@ -25,14 +27,19 @@ class UserListSerializers(serializers.ModelSerializer):
         )
 
 
-# class UserUpdateSerializers(serializers.ModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = (
-#             'email',
-#             'username',
-#             'img_profile',
-#         )
+class UserRetrieveUpdateDestroySerializers(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = (
+            'pk',
+            'email',
+            'username',
+            'img_profile',
+        )
+        read_only_fields = (
+            'email',
+        )
 
 
 class UserPasswordUpdateSerializers(serializers.ModelSerializer):

@@ -10,7 +10,7 @@ __all__ = (
 )
 
 
-class CustomAuthTokenSerializers(serializers.Serializer):
+class CustomAuthTokenSerializers(serializers.ModelSerializer):
     """
     장고 기본 로그인에 필요한 이메일과 비밀번호를 받아
     rest 페이지에서 token값 및 이메일 값을 전달
@@ -22,6 +22,14 @@ class CustomAuthTokenSerializers(serializers.Serializer):
         max_length=50,
         style={'input_type': 'password'}
     )
+
+    class Meta:
+        model = User
+        fields = (
+            'pk',
+            'email_account',
+            'password',
+        )
 
     def validate(self, attrs):
         email_account = attrs.get('email_account')

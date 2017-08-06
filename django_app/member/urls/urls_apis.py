@@ -4,10 +4,16 @@ from member import views, apis
 urlpatterns = [
     url(r'^$',
         apis.UserListView.as_view(),
-        name='userlist'),
+        name='userlist'
+        ),
+    url(r'^(?P<pk>\d+)/$',
+        apis.UserRetrieveUpdateDestroyView.as_view(),
+        name='userdetail'
+        ),
     url(r'signup/$',
         apis.UserListView.as_view(),
-        name='signup'),
+        name='signup'
+        ),
     url(r'^login/$',
         apis.CustomAuthTokenView.as_view(),
         name='login'
