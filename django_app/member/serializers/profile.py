@@ -25,6 +25,9 @@ class UserListSerializers(serializers.ModelSerializer):
             'is_active',
             'is_admin',
         )
+        write_only = (
+            'password',
+        )
 
 
 class UserRetrieveUpdateDestroySerializers(serializers.ModelSerializer):
@@ -37,7 +40,7 @@ class UserRetrieveUpdateDestroySerializers(serializers.ModelSerializer):
             'username',
             'img_profile',
         )
-        read_only_fields = (
+        read_only = (
             'email',
         )
 
@@ -69,7 +72,7 @@ class UserPasswordUpdateSerializers(serializers.ModelSerializer):
             'email',
             'password',
         )
-        read_only_fields = (
+        read_only = (
             'email'
         )
 
