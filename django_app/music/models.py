@@ -26,6 +26,9 @@ class Music(models.Model):
         blank=False,
     )
     # file_music = models.FileField(upload_to='music')
+    time_music = models.PositiveSmallIntegerField(
+        default=0,
+    )
     source_music = models.CharField(  # 음악 파일 저장된 위치 주소 리턴
         max_length=256,
         null=False,

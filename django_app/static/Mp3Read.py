@@ -15,6 +15,8 @@ from music.models import Music
 def add_mp3_and_album_image_in_database():
     """
         고의적으로 static폴더 안에만 있는 파일들만 작동하도록 하였다
+        static/musics 의 안에 있는 모든 음악 파일들의 이름을
+            sha256으로 암호화 + 앨범이미지(가수명 + 앨범명)으로 암호화
     :return: None
     """
     # 음악들이 존재하는 폴더
@@ -68,6 +70,7 @@ def add_mp3_and_album_image_in_database():
                         name_artist=artist,
                         name_album=album,
                         img_music="{}/{}.jpg".format(addr_img, img_name),
+                        time_music=audio.info.time_secs,
 
                         # TODO 더미용 날씨 데이터
                         sunny=randint(0, 1),
