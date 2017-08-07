@@ -15,6 +15,7 @@ __all__ = (
     'MyUser',
 )
 
+
 class MyUserManager(BaseUserManager):
     def create_user(self, email, username, password=None, **extra_fields):
         try:
@@ -108,6 +109,7 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     def get_short_name(self):
         return self.email if self.email else self.username
 
+
 User = get_user_model()
 
 
@@ -116,4 +118,3 @@ User = get_user_model()
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
-
