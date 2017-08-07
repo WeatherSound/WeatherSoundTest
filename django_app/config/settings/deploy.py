@@ -9,7 +9,7 @@ WSGI_APPLICATION = 'config.wsgi.deploy.application'
 
 # DEBUG = False  == Bad Request
 # 자세한 오류내용을 보려면 'DEBUG = True' 설정
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = config_secret_deploy['django']['allowed_hosts']
 
 # Database
