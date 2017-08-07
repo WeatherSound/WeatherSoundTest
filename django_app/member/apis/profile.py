@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AbstractUser
+from django.utils.translation import ugettext_lazy as _
 from rest_framework import generics, permissions, status
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -23,18 +24,29 @@ class UserRetrieveUpdateDestroyView(APIView):
     )
     lookup_field = ('pk',)
 
+    # @staticmethod
+    # def get_object(pk):
+    #     try:
+    #         return User.objects.get(pk=pk)
+    #     except User.DoesNotExist:
+    #         return Response(
+    #             status=status.HTTP_404_NOT_FOUND
+    #         )
+
     @staticmethod
     def get_object(pk):
         try:
-            return User.objects.get(pk=pk)
+            return User.objects.filter(pk=pk)
         except User.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                status=status.HTTP_404_NOT_FOUND
+            )
 
     # retrieve
     def get(self, request, pk):
-        user = User.objects.get(pk=pk)
+        user = get_object_or_404(User, pk=pk)
         serializer = UserRetrieveUpdateDestroySerializers(user)
-        return Response(serializer.data)
+        return Response(serializer .data)
 
     # update
     def put(self, request, pk):
