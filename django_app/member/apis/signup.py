@@ -62,18 +62,18 @@ class UserListView(generics.ListCreateAPIView):
         content = {
             'email_account': request.data['email_account'],
             'nickname': request.data['nickname'],
-            'img_profile': request.data['img_profile'],
+            # 'img_profile': request.data['img_profile'],
         }
         return Response(content, status=status.HTTP_201_CREATED)
 
 
 class AccountActivationView(APIView):
     @staticmethod
-    def activate(request, uid64, token):
-        uid = force_text(urlsafe_base64_decode(uid64))
+    def activate(request, uidb64, token):
+        uid = force_text(urlsafe_base64_decode(uidb64))
         try:
             print('uid: ', uid)
-            print('uid64: ', uid64)
+            print('uidb64: ', uidb64)
             user = User.objects.get(pk=uid)
             print(user)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
@@ -99,6 +99,6 @@ class AccountActivationView(APIView):
         )
 
     def get(self, request, format=None):
-        uid = request.get('uid64')
+        uid = request.get('uidb64')
         token = request.get('token')
         self.activate(request, uid, token)

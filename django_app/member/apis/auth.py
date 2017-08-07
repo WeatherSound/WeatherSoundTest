@@ -76,7 +76,7 @@ class UserLogoutView(APIView):
             django_logout(request)
             return Response(content, status=status.HTTP_401_UNAUTHORIZED)
         # TODO 삭제할 토큰이 없을 경우 그대로 로그아웃 진행시켜야하는가?
-        # django_logout(request)
+        django_logout(request)
         content = {
             "detail": _("Successfully logged out."),
         }
