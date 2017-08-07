@@ -62,6 +62,7 @@ class UserListView(generics.ListCreateAPIView):
         content = {
             'email_account': request.data['email_account'],
             'nickname': request.data['nickname'],
+            'img_profile': request.data['img_profile'],
         }
         return Response(content, status=status.HTTP_201_CREATED)
 
