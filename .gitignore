@@ -3,6 +3,7 @@
 .static_root/
 .media/
 .config_secret/
+/django_app/static/musics/
 
 
 # Created by https://www.gitignore.io/api/c,c++,vim,sass,macos,python,django,pycharm,windows,elasticbeanstalk
