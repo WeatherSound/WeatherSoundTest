@@ -1,0 +1,103 @@
+from django.contrib.auth import get_user_model, login as django_login
+from django.utils.encoding import force_text
+from django.utils.http import urlsafe_base64_decode
+from rest_framework import generics, status
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from member.serializers import UserListSerializers, UserSignupSerializers
+from member.tokens import account_activation_token
+
+User = get_user_model()
+
+__all__ = (
+    'UserListView',
+    'AccountActivationView',
+)
+
+
+class UserListView(generics.ListCreateAPIView):
+    """
+    GET 요청 : 유저 리스트 반환
+    POST 요청 : 회원가입 시리얼라이저 반환, 회원가입 가능
+
+    추후 POST 요청 추가작업 : 가입하면 is_active가 False이고 가입한 이메일로 보내진
+    메일의 링크를 클릭하면 is_active=True가 반환된다. 이는 샐러리로 연동해야함!
+    """
+    permission_classes = (AllowAny,)
+    queryset = User.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return UserListSerializers
+        elif self.request.method == 'POST':
+            return UserSignupSerializers
+
+    def pre_save(self, obj):
+        if self.request.user.is_admin:
+            obj.owner = self.request.user
+
+    def post(self, request, *args, **kwargs):
+        serializer_class = UserSignupSerializers
+        serializer = serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        # TODO 계정 활성화 메일 보내기 + celery 나중에 도입..
+        # email = serializer.validated_data['email_account']
+        # user = User.objects.get(email=email)
+        # current_site = get_current_site(request)
+        # message = render_to_string('acc_activate_email.html', {
+        #     'user': user,
+        #     'domain': current_site.domain,
+        #     'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+        #     'token': account_activation_token.make_token(user),
+        # })
+        # mail_subject = 'Hello! Welcome to WeatherSound. Please activate your account.'
+        # to_email = serializer.validated_data('email_account')
+        # email = EmailMessage(mail_subject, message, to=[to_email])
+        # email.send()
+        # msg = 'Account activation email sent. Please check your email.'
+        # super(UserListView, self).post(self, request, *args, **kwargs)
+        content = {
+            'email_account': request.data['email_account'],
+            'nickname': request.data['nickname'],
+        }
+        return Response(content, status=status.HTTP_201_CREATED)
+
+
+class AccountActivationView(APIView):
+    @staticmethod
+    def activate(request, uid64, token):
+        uid = force_text(urlsafe_base64_decode(uid64))
+        try:
+            print('uid: ', uid)
+            print('uid64: ', uid64)
+            user = User.objects.get(pk=uid)
+            print(user)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+        if user is not None and account_activation_token.check_token(user, token):
+            user.is_active = True
+            user.save()
+            django_login(request, user)
+            content = {
+                'user': user.email,
+                'result': 'Successfully acctivated the account. Enjoy!',
+            }
+            return Response(
+                content,
+                status=status.HTTP_201_CREATED
+            )
+        content = {
+            'detail': 'Activating account failed. Please try again.',
+        }
+        return Response(
+            content,
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    def get(self, request, format=None):
+        uid = request.get('uid64')
+        token = request.get('token')
+        self.activate(request, uid, token)
