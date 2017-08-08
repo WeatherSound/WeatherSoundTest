@@ -1,9 +1,12 @@
 # from forecastiopy import *
 
+from random import randint
+
 import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import Sum
 from django.utils import timezone
 
 __all__ = (
@@ -14,51 +17,6 @@ __all__ = (
 )
 
 User = get_user_model()
-
-
-# 전체 음악파일/정보 모델
-class Music(models.Model):
-    # album image 저장용
-    # TODO artist || nameMusic으로 index생성 고려
-    # img_music = models.ImageField(upload_to='img_music', blank=True)
-    img_music = models.CharField(
-        max_length=256,
-        null=False,
-        blank=False,
-    )
-    # file_music = models.FileField(upload_to='music')
-    time_music = models.PositiveSmallIntegerField(
-        default=0,
-    )
-    source_music = models.CharField(  # 음악 파일 저장된 위치 주소 리턴
-        max_length=256,
-        null=False,
-        blank=False,
-        # unique=True,
-    )
-    name_music = models.CharField(
-        max_length=100,
-    )
-    name_artist = models.CharField(
-        max_length=100,
-    )
-    name_album = models.CharField(
-        max_length=100,
-        blank=True,
-    )
-    sunny = models.PositiveIntegerField(
-        verbose_name='맑음', default=0)
-    foggy = models.PositiveIntegerField(
-        verbose_name='안개', default=0)
-    rainy = models.PositiveIntegerField(
-        verbose_name='비', default=0)
-    cloudy = models.PositiveIntegerField(
-        verbose_name='흐림', default=0)
-    snowy = models.PositiveIntegerField(
-        verbose_name='눈', default=0)
-
-    def __str__(self):
-        return self.name_music
 
 
 # TODO 잘못된 좌표가 들어왓을 떄의 처리
@@ -124,6 +82,115 @@ class WeatherManager(models.Manager):
             weather.temperature = temperature
             weather.time_saved = timezone.now()
             weather.save()
+        return weather
+
+
+class MusicManager(models.Manager):
+    def get_weather_musics(self, weather):
+        """
+            1시간에 한번씩 작동하도록?
+            weather로 들어온 날씨의 상위곡 12개 출력
+        :param weather: 출력할 날씨
+        :return: 날씨 상위곡 12개
+        """
+        return self.order_by("-" + weather)[:12]
+
+    def create_dummy(self, song_name):
+        a = []
+        while sum(a) == 0:
+            a = [randint(0, 10) for x in range(5)]
+        self.create(
+            img_music="a",
+            source_music="aa",
+            name_music=song_name,
+            name_artist="yh",
+            sunny=a[0],
+            foggy=a[1],
+            rainy=a[2],
+            cloudy=a[3],
+            snowy=a[4],
+
+        )
+
+        # pl[0].playlist_musics.aggregate(sunny_count=Sum("sunny"), foggy_sum=Sum("foggy"), rainy_sum=Sum("rainy"),
+        #                                 cloudy_sum=Sum("cloudy"), snowy_sum=Sum("snowy"))
+
+
+# 전체 음악파일/정보 모델
+class Music(models.Model):
+    # TODO artist || nameMusic으로 index생성 고려
+
+    objects = MusicManager()
+    img_music = models.CharField(
+        max_length=256,
+        null=False,
+        blank=False,
+    )
+    time_music = models.PositiveSmallIntegerField(
+        default=0,
+    )
+    source_music = models.CharField(  # 음악 파일 저장된 위치 주소 리턴
+        max_length=256,
+        null=False,
+        blank=False,
+        # unique=True,
+    )
+    name_music = models.CharField(
+        max_length=100,
+    )
+    name_artist = models.CharField(
+        max_length=100,
+    )
+    name_album = models.CharField(
+        max_length=100,
+        blank=True,
+    )
+    lyrics = models.TextField(
+        blank=True,
+        default="가사정보가 없습니다.",
+    )
+
+    sunny = models.PositiveIntegerField(
+        editable=True,
+        verbose_name='맑음', default=0)
+    foggy = models.PositiveIntegerField(
+        editable=True,
+        verbose_name='안개', default=0)
+    rainy = models.PositiveIntegerField(
+        editable=True,
+        verbose_name='비', default=0)
+    cloudy = models.PositiveIntegerField(
+        editable=True,
+        verbose_name='흐림', default=0)
+    snowy = models.PositiveIntegerField(
+        editable=True,
+        verbose_name='눈', default=0)
+
+    def add_weather(self, weather):
+        if weather == "sunny":
+            self.sunny += 1
+        elif weather == "foggy":
+            self.foggy += 1
+        elif weather == "rainy":
+            self.rainy += 1
+        elif weather == "cloudy":
+            self.cloudy += 1
+        elif weather == "snowy":
+            self.snowy += 1
+        else:
+            print("Wrong weather")
+
+    def __str__(self):
+        return self.name_music
+
+    def weather_counts(self):
+        return "sunny={sunny} foggy={foggy} rainy={rainy} cloudy={cloudy} snowy={snowy}".format(
+            sunny=self.sunny,
+            foggy=self.foggy,
+            rainy=self.rainy,
+            cloudy=self.cloudy,
+            snowy=self.snowy,
+        )
 
 
 class Weather(models.Model):
@@ -144,15 +211,62 @@ class Weather(models.Model):
     )
 
 
+class PlaylistManager(models.Manager):
+    def create_main_list(self, name_playlist):
+        admin = User.objects.get(pk=1)  # filter is_superuser true?
+        self.create(user=admin, name_platlist=name_playlist)
+        return self
+
+
 # 유저별 플레이리스트 모델
 class Playlist(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    name_playlist = models.CharField(max_length=30, default='playlist')
+    objects = PlaylistManager()
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
+    name_playlist = models.CharField(
+        max_length=30,
+        default='playlist'
+    )
+    weather = models.CharField(
+        max_length=10,
+        default="false",
+    )
     playlist_musics = models.ManyToManyField(
         'Music',
         through='PlaylistMusics',
         related_name='playlist_musics'
     )
+
+    def make_list_attribute_weather(self):
+        """
+            이 list의 대표 날씨를 뽑는다
+            우선은 단순히 날씨별 가장 높은 것을 카운트
+        :return:
+        """
+        results = self.playlist_musics.aggregate(
+            sunny=Sum("sunny"),
+            foggy=Sum("foggy"),
+            rainy=Sum("rainy"),
+            cloudy=Sum("cloudy"),
+            snowy=Sum("snowy"),
+
+        )
+        return max(results, key=lambda i: results[i])
+
+    def add_music(self, music):
+        # TODO 아마 사용은 주소로 들어올테니 music 객체르 ㄹ찾도록 추후 수정
+        """
+            음악을 리스트에 추가하고 weather필드에 날씨 업데이트
+        :param music: 리스트에 들어갈 음악
+        :return:
+        """
+        self.playlistmusics_set.create(music=music)
+        self.weather = self.make_list_attribute_weather()
+        music.add_weather(self.weather)
+        self.save()
+        return self
 
     def __str__(self):
         return '{}의 {}'.format(
@@ -162,8 +276,12 @@ class Playlist(models.Model):
 
 # 유저의 플레이리스트 내 음악 목록 모델
 class PlaylistMusics(models.Model):
-    name_playlist = models.ForeignKey('Playlist', on_delete=models.CASCADE)
-    music = models.ForeignKey('Music', on_delete=models.CASCADE)
+    name_playlist = models.ForeignKey(
+        'Playlist',
+        on_delete=models.CASCADE)
+    music = models.ForeignKey(
+        'Music',
+        on_delete=models.CASCADE)
     date_added = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
