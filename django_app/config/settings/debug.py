@@ -14,7 +14,7 @@ ALLOWED_HOSTS = config_secret_debug['django']['allowed_hosts']
 INSTALLED_APPS.append('django_extensions')
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(ROOT_DIR, '.static_root')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(ROOT_DIR, '.media')
@@ -30,3 +30,7 @@ DATABASES = {
         'NAME': os.path.join(ROOT_DIR, 'db.sqlite3'),
     }
 }
+
+### Storage settings ###
+STATICFILES_LOCATION = 'static'
+MEDIAFILES_LOCATION = 'media'
