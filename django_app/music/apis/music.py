@@ -3,7 +3,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from music.models import Music
-from music.paginator import StandardResultSetPagination
 from music.permissions import IsOwnerOrReadOnly
 from music.serializers import MusicSerializer
 
@@ -27,7 +26,6 @@ class MusicListCreateView(APIView):
     def get(self, request, *args, **kwargs):
         musics = Music.objects.all()
         serializer = MusicSerializer(musics, many=True)
-        pagination_class = StandardResultSetPagination
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
