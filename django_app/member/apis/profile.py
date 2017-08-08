@@ -1,4 +1,4 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import generics, permissions, status
 from rest_framework.generics import get_object_or_404
@@ -103,3 +103,23 @@ class UserRetrieveUpdateDestroyView1(generics.RetrieveUpdateDestroyAPIView):
 class UserPasswordUpdateView(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserPasswordUpdateSerializers
+
+    def patch(self, request, *args, **kwargs):
+        user = request.user
+        email = request.data['email']
+        password = request.data['password']
+        password2 = request.data['new_password2']
+        object = authenticate(
+            request,
+            username=email,
+            password=password,
+        )
+        if object is not None:
+            user.set_password(password2)
+            return user
+        else:
+            msg = '기존 비밀번호가 일치하지 않습니다.'
+            return Response(
+                msg,
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
