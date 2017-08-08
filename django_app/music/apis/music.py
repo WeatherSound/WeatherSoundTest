@@ -28,6 +28,7 @@ class MusicListCreateView(APIView):
         musics = Music.objects.all()
         serializer = MusicSerializer(musics, many=True)
         pagination_class = StandardResultSetPagination
+
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
