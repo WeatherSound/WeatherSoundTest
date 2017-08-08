@@ -32,11 +32,14 @@ class UserRetrieveUpdateDestroyView(APIView):
     #         return Response(
     #             status=status.HTTP_404_NOT_FOUND
     #         )
-
-    @staticmethod
-    def get_object(pk):
+    #
+    # @staticmethod
+    def get_object(self, pk):
         try:
-            return User.objects.filter(pk=pk)
+            return get_object_or_404(
+                User,
+                pk=pk,
+            )
         except User.DoesNotExist:
             return Response(
                 status=status.HTTP_404_NOT_FOUND
@@ -50,7 +53,8 @@ class UserRetrieveUpdateDestroyView(APIView):
 
     # update
     def put(self, request, pk):
-        user = self.get_object(pk)
+        user = get_object_or_404(User, pk=pk)
+        # user = self.get_object(pk=pk)
         serializer = UserRetrieveUpdateDestroySerializers(user, request.data)
         if serializer.is_valid():
             serializer.save()
@@ -59,7 +63,8 @@ class UserRetrieveUpdateDestroyView(APIView):
 
     # partial update
     def patch(self, request, pk):
-        user = self.get_object(pk)
+        user = get_object_or_404(User, pk=pk)
+        # user = self.get_object(pk=pk)
         serializer = UserRetrieveUpdateDestroySerializers(user, request.data, partial=True)
         if serializer.is_valid():
             return Response(serializer.data)
