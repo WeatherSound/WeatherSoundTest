@@ -49,6 +49,13 @@ EMAIL_PORT = 587
 
 AUTH_USER_MODEL = 'member.MyUser'
 
+# DJANGO CORS_HEAD
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_WHITELIST = (
+    'localhost:8080',
+    'localhost:8000',
+)
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -75,7 +82,6 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 12,
 }
 
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -84,6 +90,13 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    ##########
+    # Custom #
+    ##########
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
+
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -146,6 +159,5 @@ USE_TZ = True
 # STATIC_URL = '/static/'
 STATIC_DIR = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIRS = [
-    #STATIC_DIR,
+    # STATIC_DIR,
 ]
-
