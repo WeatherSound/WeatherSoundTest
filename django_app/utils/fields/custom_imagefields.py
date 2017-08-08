@@ -1,4 +1,6 @@
-from django.db.models.fields.files import ImageField, ImageFieldFile, FieldFile
+from django.db.models.fields.files import ImageField, ImageFieldFile
+
+from config import settings
 
 __all__ = (
     'CustomImageFieldFile',
@@ -13,15 +15,15 @@ class CustomImageFieldFile(ImageFieldFile):
             return super().url
         except ValueError:
             from django.contrib.staticfiles.storage import staticfiles_storage
-            return staticfiles_storage.url(self.field.static_image_path)
+            return staticfiles_storage.url(self.fields.static_image_path)
 
 
 class CustomImageField(ImageField):
     attr_class = CustomImageFieldFile
 
     def __init__(self, *args, **kwargs):
-        self.static_image_path = kwargs.pop(
-            'default_static_image',
+        self.static_dir = kwargs.pop(
+            'static_image_path',
             'member/base_profile.png'
         )
         super().__init__(*args, **kwargs)
