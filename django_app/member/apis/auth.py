@@ -9,7 +9,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ..serializers import CustomAuthTokenSerializers
+from ..serializers import CustomAuthTokenSerializers, UserRetrieveUpdateDestroySerializers
 
 User = get_user_model()
 
@@ -45,15 +45,19 @@ class CustomAuthTokenView(APIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
+        user_serializer = UserRetrieveUpdateDestroySerializers(user)
+        response_data = {}
+        response_data['UserInfo'] = user_serializer.data
         token, created = Token.objects.get_or_create(user=user)
         content = {
-            'pk': user.pk,
             'token': token.key,
-            'email': user.email,
+            'UserInfo': response_data.values(),
         }
         django_login(request, user)
-        return Response(content,
-                        status=status.HTTP_202_ACCEPTED)
+        return Response(
+            content,
+            status=status.HTTP_202_ACCEPTED
+        )
 
 
 class UserLogoutView(APIView):
@@ -67,14 +71,14 @@ class UserLogoutView(APIView):
             request.user.auth_token.delete()
         except (ObjectDoesNotExist, AttributeError):
             content = {
-                "detail": _("No token given"),
+                "detail": _("No token given."),
             }
             django_logout(request)
             return Response(content, status=status.HTTP_401_UNAUTHORIZED)
         # TODO 삭제할 토큰이 없을 경우 그대로 로그아웃 진행시켜야하는가?
-        # django_logout(request)
+        django_logout(request)
         content = {
-            "detail": _("Logged out"),
+            "detail": _("Successfully logged out."),
         }
         return Response(content, status=status.HTTP_200_OK)
 

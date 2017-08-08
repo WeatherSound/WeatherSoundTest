@@ -7,7 +7,7 @@ from django.core.validators import validate_email
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-
+from utils.fields import CustomImageField
 from django.utils.translation import ugettext_lazy as _
 from rest_framework.authtoken.models import Token
 
@@ -27,7 +27,8 @@ class MyUserManager(BaseUserManager):
             extra_fields.setdefault('is_staff', False)
             extra_fields.setdefault('is_superuser', False)
             user.set_password(password)
-            user.is_active = False
+            # TODO 계정 활성화 메일 작동 전에는 False
+            user.is_active = True
             user.save()
             return user
         except ValidationError:
@@ -59,9 +60,18 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
         unique=True,
         null=True,
     )
-    username = models.CharField(_('nickname'), max_length=40, null=True, unique=True)
+    username = models.CharField(
+        _('nickname'),
+        max_length=40,
+        null=True,
+        unique=True
+    )
     # TODO img_profile - CustomImageField 설정 필요
-    img_profile = models.ImageField(upload_to='member', blank=True)
+    img_profile = CustomImageField(
+        upload_to='member',
+        blank=True,
+        default='member/basic_profile.png'
+    )
     is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(
         _('active'),

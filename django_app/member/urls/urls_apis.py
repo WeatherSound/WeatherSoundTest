@@ -22,7 +22,11 @@ urlpatterns = [
         apis.UserLogoutView.as_view(),
         name='logout'
         ),
-    url(r'^(?P<user_pk>\d+)/edit/password/$',
+    url(r'^(?P<pk>\d+)/edit/$',
+        apis.UserRetrieveUpdateDestroyView.as_view(),
+        name='userinfo_update'
+        ),
+    url(r'^(?P<pk>\d+)/edit/password/$',
         apis.UserPasswordUpdateView.as_view(),
         name='edit_password'
         ),
