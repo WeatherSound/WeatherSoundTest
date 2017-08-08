@@ -11,6 +11,6 @@ class MusicSerializer(serializers.ModelSerializer):
             'id',
             'img_music',
             'name_music',
-            'name_singer',
+            'name_artist',
             'file_music',
         )

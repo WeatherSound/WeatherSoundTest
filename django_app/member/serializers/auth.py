@@ -30,6 +30,9 @@ class CustomAuthTokenSerializers(serializers.ModelSerializer):
             'email_account',
             'password',
         )
+        read_only = (
+            'email_account',
+        )
 
     def validate(self, attrs):
         email_account = attrs.get('email_account')

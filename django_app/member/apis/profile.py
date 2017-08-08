@@ -36,10 +36,7 @@ class UserRetrieveUpdateDestroyView(APIView):
     # @staticmethod
     def get_object(self, pk):
         try:
-            return get_object_or_404(
-                User,
-                pk=pk,
-            )
+            return User.objects.filter(pk=pk)
         except User.DoesNotExist:
             return Response(
                 status=status.HTTP_404_NOT_FOUND
@@ -48,27 +45,43 @@ class UserRetrieveUpdateDestroyView(APIView):
     # retrieve
     def get(self, request, pk):
         user = get_object_or_404(User, pk=pk)
-        serializer = UserRetrieveUpdateDestroySerializers(user)
+        serializer = UserRetrieveUpdateDestroySerializers(
+            user
+        )
         return Response(serializer .data)
 
     # update
     def put(self, request, pk):
-        user = get_object_or_404(User, pk=pk)
-        # user = self.get_object(pk=pk)
-        serializer = UserRetrieveUpdateDestroySerializers(user, request.data)
+        # user = get_object_or_404(User, pk=pk)
+        user = self.get_object(pk=pk)
+        serializer = UserRetrieveUpdateDestroySerializers(
+            user,
+            request.data
+        )
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     # partial update
     def patch(self, request, pk):
-        user = get_object_or_404(User, pk=pk)
+        user = self.get_object(pk=pk)
+        # user = get_object_or_404(User, pk=pk)
         # user = self.get_object(pk=pk)
-        serializer = UserRetrieveUpdateDestroySerializers(user, request.data, partial=True)
+        serializer = UserRetrieveUpdateDestroySerializers(
+            user,
+            request.data,
+            partial=True
+        )
         if serializer.is_valid():
             return Response(serializer.data)
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            serializer.data,
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     # destroy
     def delete(self, request, pk):
