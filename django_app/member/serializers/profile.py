@@ -1,4 +1,6 @@
 from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth.hashers import check_password
+from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
@@ -114,26 +116,35 @@ class UserPasswordUpdateSerializers(serializers.ModelSerializer):
 
     def validate(self, attrs):
         email = attrs.get('email')
+        print(email)
         password = attrs.get('password')
+        print(password)
         new_password1 = attrs.get('new_password1')
+        print(new_password1)
         new_password2 = attrs.get('new_password2')
+        print(new_password2)
         if password:
-            user = User.objects.filter(email=email)
-            if self.authenticate(user.email, password):
-                pass
-            raise serializers.ValidationError(
-                _('Password didn\'t match.')
-            )
-
-        if new_password1 and new_password2:
-            if new_password1 == new_password2:
-                User.objects.set_password(new_password2)
-                return new_password2
+            user = get_object_or_404(User, email=email)
+            ori_password = user.password
+            print(ori_password)
+            if check_password(password, encoded=ori_password):
+            # if authenticate(username=email, password=password):
+                if new_password1 and new_password2:
+                    if new_password1 == new_password2:
+                        user.set_password(new_password2)
+                        user.save()
+                        return new_password2
+                    else:
+                        raise serializers.ValidationError(
+                            _("Enter the identical password.")
+                        )
+                else:
+                    raise serializers.ValidationError(
+                        _("Enter the new password.")
+                    )
             else:
                 raise serializers.ValidationError(
-                    _("Enter the identical password.")
+                    _('Password didn\'t match. hahahaha')
                 )
-        else:
-            raise serializers.ValidationError(
-                _("Enter the new password.")
-            )
+
+
