@@ -53,16 +53,16 @@ class UserPasswordUpdateView(generics.RetrieveUpdateAPIView):
             user.set_password(request.data.get('new_password2'))
             print('hello!!')
             user.save()
-            response_data['UserInfo'] = user_serializer.data
             content = {
                 'detail': "비밀번호가 변경되었습니다.",
-                'UserInfo': response_data.values(),
+                'email': user.email,
+                'password': user.password,
             }
             return Response(content, status=status.HTTP_200_OK)
-        response_data['UserInfo'] = user_serializer.data
+        # response_data['UserInfo'] = user_serializer.data
         content = {
             "detail": "오류가 발생했습니다.",
-            "UserInfo": response_data.values()
+            #"UserInfo": response_data.values()
         }
         print('ended!!')
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
