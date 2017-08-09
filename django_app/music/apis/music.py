@@ -23,11 +23,10 @@ __all__ = (
 #   "name_singer": "sik-k, punchnello, flowsik",
 #   "file_music": "/media/music/EUNG_FREESTYLE_%E1%84%8B%E1%85%B3%E1%86%BC%E1%84%91%E1%85%B3%E1%84%85%E1%85%B5%E1%84%89%E1%85%B3%E1%84%90%E1%85%A1%E1%84%8B%E1%85%B5%E1%86%AF_-_LIVE_SIK-K_PUNCHNELLO_OWEN_OVADOZ_FLOWSIK.mp3"
 # },
-class MusicListCreateView(APIView):
+class MusicListCreateView(generics.ListAPIView):
     def get(self, request, *args, **kwargs):
         musics = Music.objects.all()
         serializer = MusicSerializer(musics, many=True)
-        pagination_class = StandardResultSetPagination
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
@@ -49,5 +48,5 @@ class MusicListView(generics.ListCreateAPIView):
     permission_classes = (IsOwnerOrReadOnly,)
 
     def perform_create(self, serializer):
-        if self.request.user.is_staff:
+        if self.request.user.is_admin:
             serializer.save(owner=self.request.user)

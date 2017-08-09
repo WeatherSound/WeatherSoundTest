@@ -12,5 +12,5 @@ class MusicSerializer(serializers.ModelSerializer):
             'img_music',
             'name_music',
             'name_artist',
-            'file_music',
+            'source_music',
         )

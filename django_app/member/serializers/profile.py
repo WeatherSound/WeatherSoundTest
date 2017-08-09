@@ -1,5 +1,4 @@
-from django.contrib.auth import get_user_model, authenticate
-from django.contrib.auth.hashers import check_password
+from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
@@ -37,7 +36,6 @@ class UserRetrieveUpdateDestroySerializers(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'pk',
             'email',
             'username',
             'img_profile',
@@ -45,14 +43,6 @@ class UserRetrieveUpdateDestroySerializers(serializers.ModelSerializer):
         read_only = (
             'email',
         )
-
-    def validate(self, attrs):
-        pk = attrs.get('pk')
-        if not pk:
-            raise serializers.ValidationError(
-                _('User doesn\'t exist')
-            )
-        return attrs
 
     def update(self, instance, validated_data):
         # get 예외처리?
@@ -103,7 +93,6 @@ class UserPasswordUpdateSerializers(serializers.ModelSerializer):
         read_only = (
             'email',
         )
-
     # def validate_password(self, password):
     #     if password:
     #         user = User.objects.filter(email=email)
@@ -116,7 +105,6 @@ class UserPasswordUpdateSerializers(serializers.ModelSerializer):
 
     def validate(self, attrs):
         email = attrs.get('email')
-        print(email)
         password = attrs.get('password')
         print(password)
         new_password1 = attrs.get('new_password1')
@@ -125,26 +113,16 @@ class UserPasswordUpdateSerializers(serializers.ModelSerializer):
         print(new_password2)
         if password:
             user = get_object_or_404(User, email=email)
-            ori_password = user.password
-            print(ori_password)
-            if check_password(password, encoded=ori_password):
-            # if authenticate(username=email, password=password):
-                if new_password1 and new_password2:
-                    if new_password1 == new_password2:
-                        user.set_password(new_password2)
-                        user.save()
-                        return new_password2
-                    else:
-                        raise serializers.ValidationError(
-                            _("Enter the identical password.")
-                        )
-                else:
-                    raise serializers.ValidationError(
-                        _("Enter the new password.")
-                    )
-            else:
-                raise serializers.ValidationError(
-                    _('Password didn\'t match. hahahaha')
+            if not user.check_password(password):
+                return serializers.ValidationError(
+                    "기존 비밀번호가 일치하지 않습니다."
                 )
-
-
+            elif not (new_password1 and new_password2):
+                return serializers.ValidationError(
+                    "필수 입력칸입니다."
+                )
+            elif new_password1 != new_password2:
+                return serializers.ValidationError(
+                    "새로운 비밀번호와 확인용 비밀번호가 일치하지 않습니다."
+                )
+            return attrs

@@ -3,7 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext_lazy as _
 from eyed3.compat import unicode
 from rest_framework import status
-from rest_framework.authentication import BasicAuthentication, SessionAuthentication
+from rest_framework.authentication import BasicAuthentication, SessionAuthentication, TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -24,19 +24,19 @@ class CustomAuthTokenView(APIView):
     Anonymous user가 이메일 / 비밀번호를 입력하면
     그에 따른 토큰을 생성하여 전달해준다.
     """
-    authentication_classes = (SessionAuthentication, BasicAuthentication)
+    authentication_classes = (TokenAuthentication, BasicAuthentication)
     permission_classes = (AllowAny,)
     serializer_class = CustomAuthTokenSerializers
 
-    def get(self, request, format=None):
-        content = {
-            'user': unicode(request.user),
-            'auth': unicode(request.auth),
-        }
-        return Response(
-            content,
-            status=status.HTTP_200_OK
-        )
+    # def get(self, request, format=None):
+    #     content = {
+    #         'user': unicode(request.user),
+    #         'auth': unicode(request.auth),
+    #     }
+    #     return Response(
+    #         content,
+    #         status=status.HTTP_200_OK
+    #     )
 
     def post(self, request, format=None, *args, **kwargs):
         """
