@@ -12,7 +12,7 @@ __all__ = (
 
 
 class UserSignupSerializers(serializers.Serializer):
-    email_account = serializers.CharField(
+    email = serializers.CharField(
         max_length=50
     )
     nickname = serializers.CharField(
@@ -28,16 +28,16 @@ class UserSignupSerializers(serializers.Serializer):
         style={'input_type': 'password'}
     )
 
-    def validate_email_account(self, email_account):
-        if User.objects.filter(email=email_account).exists():
+    def validate_emailfield(self, email):
+        if User.objects.filter(email=email).exists():
             raise serializers.ValidationError(
                 _('Email already exists.')
             )
-        elif validate_email(email_account):
+        elif validate_email(email):
             raise serializers.ValidationError(
                 _('Please enter a proper email account.')
             )
-        return email_account
+        return email
 
     def validate_nickname(self, nickname):
         if User.objects.filter(username=nickname).exists():
@@ -57,7 +57,7 @@ class UserSignupSerializers(serializers.Serializer):
 
     def save(self):
         user = User.objects.create_user(
-            email=self.validated_data.get('email_account'),
+            email=self.validated_data.get('email'),
             username=self.validated_data.get('nickname'),
             password=self.validated_data.get('password1'),
             # TODO 계정활성화 메일 보낼 시 is_active는 False로 돌릴 것.
