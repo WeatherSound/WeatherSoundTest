@@ -26,7 +26,7 @@ class UserListView(generics.ListCreateAPIView):
     메일의 링크를 클릭하면 is_active=True가 반환된다. 이는 샐러리로 연동해야함!
     """
     permission_classes = (AllowAny,)
-    queryset = User.objects.all()
+    queryset = User.objects.all().order_by('pk')
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
