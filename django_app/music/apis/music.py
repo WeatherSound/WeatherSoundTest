@@ -48,5 +48,5 @@ class MusicListView(generics.ListCreateAPIView):
     permission_classes = (IsOwnerOrReadOnly,)
 
     def perform_create(self, serializer):
-        if self.request.user.is_staff:
+        if self.request.user.is_admin:
             serializer.save(owner=self.request.user)
