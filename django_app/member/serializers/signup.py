@@ -27,8 +27,6 @@ class UserSignupSerializers(serializers.Serializer):
         write_only=True,
         style={'input_type': 'password'}
     )
-    class Meta:
-        order_by = ('pk',)
 
     def validate_emailfield(self, email):
         if User.objects.filter(email=email).exists():
