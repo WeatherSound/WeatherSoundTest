@@ -36,7 +36,6 @@ class UserRetrieveUpdateDestroySerializers(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'pk',
             'email',
             'username',
             'img_profile',
@@ -44,14 +43,6 @@ class UserRetrieveUpdateDestroySerializers(serializers.ModelSerializer):
         read_only = (
             'email',
         )
-
-    def validate(self, attrs):
-        pk = attrs.get('pk')
-        if not pk:
-            raise serializers.ValidationError(
-                _('User doesn\'t exist')
-            )
-        return attrs
 
     def update(self, instance, validated_data):
         # get 예외처리?
@@ -94,11 +85,14 @@ class UserPasswordUpdateSerializers(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
+            'email',
             'password',
             'new_password1',
             'new_password2',
         )
-
+        read_only = (
+            'email',
+        )
     # def validate_password(self, password):
     #     if password:
     #         user = User.objects.filter(email=email)
@@ -110,6 +104,7 @@ class UserPasswordUpdateSerializers(serializers.ModelSerializer):
     #         )
 
     def validate(self, attrs):
+        email = attrs.get('email')
         password = attrs.get('password')
         print(password)
         new_password1 = attrs.get('new_password1')
@@ -117,10 +112,10 @@ class UserPasswordUpdateSerializers(serializers.ModelSerializer):
         new_password2 = attrs.get('new_password2')
         print(new_password2)
         if password:
-            user = get_object_or_404(User, pk=self.pk)
+            user = get_object_or_404(User, email=email)
             if not user.check_password(password):
                 return serializers.ValidationError(
-                    "기존 비밀번호를 정확히 입력해주세요."
+                    "기존 비밀번호가 일치하지 않습니다."
                 )
             elif not (new_password1 and new_password2):
                 return serializers.ValidationError(

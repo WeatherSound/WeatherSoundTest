@@ -18,7 +18,7 @@ __all__ = (
 User = get_user_model()
 
 
-class UserRetrieveUpdateDestroyView(APIView):
+class UserRetrieveUpdateDestroyView1(APIView):
     permission_classes = (
         permissions.IsAuthenticatedOrReadOnly,
         ObjectIsRequestUser,
@@ -91,22 +91,24 @@ class UserRetrieveUpdateDestroyView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class UserRetrieveUpdateDestroyView1(generics.RetrieveUpdateDestroyAPIView):
+class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserListSerializers
     permission_classes = (
         permissions.IsAuthenticatedOrReadOnly,
         ObjectIsRequestUser,
     )
-    lookup_field = ('pk',)
 
 
 class UserPasswordUpdateView(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserPasswordUpdateSerializers
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (
+        permissions.IsAuthenticatedOrReadOnly,
+        ObjectIsRequestUser,
+    )
 
-    def patch(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
         user = self.request.user
         serializer = self.get_serializer(data=request.data)
         print(serializer)
@@ -115,7 +117,7 @@ class UserPasswordUpdateView(generics.RetrieveUpdateAPIView):
             user.save()
             content = {
                 'detail': "비밀번호가 변경되었습니다.",
-                'id': user.id,
+                'pk': user.pk,
                 'changed_password': user.password,
             }
             return Response(content, status=status.HTTP_200_OK)
