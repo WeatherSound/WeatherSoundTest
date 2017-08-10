@@ -88,6 +88,7 @@ class UserSignupView(generics.RetrieveUpdateAPIView):
             'userInfo': user_serializer.data,
             # TODO 이메일계정활성화 기능 구현 후 user 정보 자체를 반환하기
             # 'img_profile': request.data['img_profile'],
+            # 'img_profile': request.data['img_profile'],
         }
         return Response(content, status=status.HTTP_201_CREATED)
 

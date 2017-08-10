@@ -1,6 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
-from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
 User = get_user_model()
@@ -36,6 +34,7 @@ class UserRetrieveUpdateDestroySerializers(serializers.ModelSerializer):
     """
     유저 정보(이메일 / 유저명 / 프로필이미지) 변경
     """
+
     class Meta:
         model = User
         fields = (
@@ -60,7 +59,7 @@ class UserRetrieveUpdateDestroySerializers(serializers.ModelSerializer):
         instance.img_profile = validated_data.get(
             'img_profile',
             instance.img_profile
-        )
+        ).split("?")[0]
         instance.save()
         return instance
 

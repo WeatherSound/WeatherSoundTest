@@ -32,4 +32,4 @@ RUN         /root/.pyenv/versions/weathersound/bin/python /srv/weathersound/djan
 
 CMD         supervisord -n
 # 80포트와 8000포트를 열어줌
-EXPOSE      80 8000
+EXPOSE      80 8000 8080

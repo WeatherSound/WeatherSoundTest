@@ -3,7 +3,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from music.models import Music
-from music.paginator import StandardResultSetPagination
 from music.permissions import IsOwnerOrReadOnly
 from music.serializers import MusicSerializer
 
@@ -23,7 +22,7 @@ __all__ = (
 #   "name_singer": "sik-k, punchnello, flowsik",
 #   "file_music": "/media/music/EUNG_FREESTYLE_%E1%84%8B%E1%85%B3%E1%86%BC%E1%84%91%E1%85%B3%E1%84%85%E1%85%B5%E1%84%89%E1%85%B3%E1%84%90%E1%85%A1%E1%84%8B%E1%85%B5%E1%86%AF_-_LIVE_SIK-K_PUNCHNELLO_OWEN_OVADOZ_FLOWSIK.mp3"
 # },
-class MusicListCreateView(generics.ListAPIView):
+class MusicListCreateView(APIView):
     def get(self, request, *args, **kwargs):
         musics = Music.objects.all()
         serializer = MusicSerializer(musics, many=True)

@@ -1,9 +1,10 @@
 # from forecastiopy import *
+
 import requests
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
-
-import config
+from django.utils import timezone
 
 __all__ = (
     'Music',
@@ -26,87 +27,121 @@ class Music(models.Model):
         blank=False,
     )
     # file_music = models.FileField(upload_to='music')
+    time_music = models.PositiveSmallIntegerField(
+        default=0,
+    )
     source_music = models.CharField(  # 음악 파일 저장된 위치 주소 리턴
         max_length=256,
         null=False,
         blank=False,
-        unique=True,
+        # unique=True,
     )
-    name_music = models.CharField(max_length=100)
-    name_artist = models.CharField(max_length=100)
-    name_album = models.CharField(max_length=100, blank=True)
-
-    sunny = models.PositiveIntegerField(verbose_name='맑음', default=0)
-    foggy = models.PositiveIntegerField(verbose_name='안개', default=0)
-    rainy = models.PositiveIntegerField(verbose_name='비', default=0)
-    cloudy = models.PositiveIntegerField(verbose_name='흐림', default=0)
-    snowy = models.PositiveIntegerField(verbose_name='눈', default=0)
+    name_music = models.CharField(
+        max_length=100,
+    )
+    name_artist = models.CharField(
+        max_length=100,
+    )
+    name_album = models.CharField(
+        max_length=100,
+        blank=True,
+    )
+    sunny = models.PositiveIntegerField(
+        verbose_name='맑음', default=0)
+    foggy = models.PositiveIntegerField(
+        verbose_name='안개', default=0)
+    rainy = models.PositiveIntegerField(
+        verbose_name='비', default=0)
+    cloudy = models.PositiveIntegerField(
+        verbose_name='흐림', default=0)
+    snowy = models.PositiveIntegerField(
+        verbose_name='눈', default=0)
 
     def __str__(self):
         return self.name_music
 
 
-# 사용자의 위치를 받아와 날씨정보 1시간마다 DB에 업데이트
+# TODO 잘못된 좌표가 들어왓을 떄의 처리
+class WeatherManager(models.Manager):
+    """
+    Weather용 manager
+        _get_location_info : 좌표를 받아서 지명으로 변환
+        _get_weather_info  : 좌표르 받아서 날씨 정보 반환
+        create_or_update_weather :  좌표를 입력받아서 지명을 uniqueKey로 하는 Weather class 생성
+                                    만약 이미 같은 지명의 객체가 존재하면 시간과 날씨를 업데이트
+    """
+    weather_dict = {
+        "clear-day": "sunny",
+        "clear-night": "sunny",
+        "rain": "rainy",
+        "snow": "snowy",
+        "wind": "sunny",
+        "sleet": "foggy",
+        "fog": "foggy",
+        "partly-cloudy-day": "cloudy",
+        "partly-cloudy-night": "cloudy",
+        "cloudy": "cloudy",
+
+    }
+
+    # a = [37.497799, 127.027482] # test 좌표
+    def _get_location_info(self, latitude, longitude):
+        url = "https://maps.googleapis.com/maps/api/geocode/json" \
+              "?latlng={LATITUDE},{LONGITUDE}" \
+              "&key={SECRET_KEY}" \
+              "&language=ko" \
+              "&result_type={result_type}".format(LATITUDE=latitude,
+                                                  LONGITUDE=longitude,
+                                                  SECRET_KEY=settings.GOOGLE_API_KEY,
+                                                  result_type="sublocality", )
+
+        return requests.get(url).json()["results"][2]["formatted_address"]
+
+    def _get_weather_info(self, latitude, longitude):
+        url = "https://api.darksky.net/forecast/" \
+              "{SECRET_KEY}/" \
+              "{LATITUDE},{LONGITUDE}".format(SECRET_KEY=settings.DARKSKY_API_KEY,
+                                              LATITUDE=latitude,
+                                              LONGITUDE=longitude, )
+        data = requests.get(url=url).json()
+        current_weather = self.weather_dict[data["currently"]["icon"]]
+        temperature = data["currently"]["temperature"]
+        return current_weather, temperature
+
+    def create_or_update_weather(self, latitude, longitude):
+        addr = self._get_location_info(latitude, longitude)
+        current_weather, temperature = self._get_weather_info(latitude, longitude)
+        weather, weather_created = self.get_or_create(
+            location=addr,
+            defaults={
+                "current_weather": current_weather,
+                "temperature": temperature,
+            }
+        )
+
+        if not weather_created and (timezone.now() - weather.time_saved).seconds >= 3600:
+            weather.current_weather = current_weather
+            weather.temperature = temperature
+            weather.time_saved = timezone.now()
+            weather.save()
+
+
 class Weather(models.Model):
-    # TODO 위도 경도는 저장해야할 이유가 없... -> 위치 판별은 지명으로 대체
-    # latitude = models.FloatField(verbose_name='위도')
-    # longitude = models.FloatField(verbose_name='경도')
-    location = models.CharField(max_length=100)
-    time_saved = models.DateTimeField(auto_now_add=True)
-    cur_weather = models.CharField(max_length=100)
-
-    # TODO main페이지 url-get요청일 경우 view에서 처리하는 것으로.
-    def get_location_info(self):
-        """
-        구글 역지오코딩을 사용해 위도/경도 정보를 사용자 위치정보를 리턴하고
-        해당 인스턴스에 정보 저장
-        :param lat: 위도(horizontal location) 정보
-        :param long: 경도(vertical location) 정보
-        :return: 사용자 위치정보
-        """
-        # 위도 경도를 맴버변수로 받기에는
-        lat = self.latitude
-        long = self.longitude
-        google_api_key = config.settings.GOOGLE_API_KEY
-        url = 'https://maps.googleapis.com/maps/api/geocode/json' \
-              '?latlng={lat},{long}' \
-              '&key={key}' \
-              '&language=ko' \
-              '&result_type={result_type}'.format(lat=lat,
-                                                  long=long,
-                                                  key=google_api_key,
-                                                  result_type="sublocality"
-                                                  )
-        addr = requests.get(url).json()['results'][1]['address_components'][2]['long_name']
-        self.location = addr
-        return addr
-
-        # TODO 날씨 정보 라이브러리 사용하지 않고 불러와 저장하기
-        # def get_weather_info(self):
-        #     """
-        #     날씨 정보 API를 통해 위도/경도 정보로 해당 지역의 날씨정보를 리턴하고
-        #     해당 인스턴스에 정보 저장
-        #     :param lat: 위도(horizontal location) 정보
-        #     :param long: 경도(vertical location) 정보
-        #     :return: 사용자 위치의 날씨 정보
-        #     """
-        #     lat = self.latitude
-        #     long = self.longitude
-        #     key = config.settings.DARKSKY_API_KEY
-        #     fio = ForecastIO.ForecastIO(key,
-        #                                 latitude=lat,
-        #                                 longitude=long
-        #                                 )
-        #     current = FIOCurrently.FIOCurrently(fio)
-        #     import time
-        #     # TODO 요청을 보낸 시간만 추출하여 1시간이 지났으면 날씨정보 업데이트
-        #     cur_hour = time.gmtime(current.time).tm_hour
-        #     if abs(cur_hour - self.time_saved.hour) > 1:
-        #         self.get_weather_info()
-        #     cur_icon = current.icon
-        #     self.weather = cur_icon
-        #     self.weather.save()
-        #     return cur_icon
+    object = WeatherManager()
+    location = models.CharField(  # 지명 ex) 서울시 서초구 반포동
+        max_length=100,
+        unique=True,
+    )
+    current_weather = models.CharField(  # 지금의 날씨 (미리 분류된 5가지)
+        max_length=10,
+    )
+    time_saved = models.DateTimeField(  # 저장된 시간
+        auto_now=True,
+        # editable=True,
+    )
+    temperature = models.FloatField(  # 지금 온도
+        default=18.0,
+    )
 
 
 # 유저별 플레이리스트 모델
