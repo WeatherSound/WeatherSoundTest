@@ -35,7 +35,6 @@ SECRET_KEY = config_secret_common['django']['secret_key']
 GOOGLE_API_KEY = config_secret_common['google']['geocoding_api_key']
 DARKSKY_API_KEY = config_secret_common['weatherinfo']['darksky_api_key']
 
-
 ###
 # FACEBOOK
 FACEBOOK_API_KEY = config_secret_common['facebook']['facebook_api_key']
@@ -49,6 +48,40 @@ EMAIL_HOST_PASSWORD = config_secret_common['email_confirm']['email_password']
 EMAIL_PORT = 587
 
 AUTH_USER_MODEL = 'member.MyUser'
+
+# DJANGO CORS_HEAD
+# CORS_ALLOW_CREDENTIALS = False
+CORS_ALLOW_CREDENTIALS = True
+# 모든 input 허용 -> 없에도 될듯
+CORS_ORIGIN_ALLOW_ALL = True
+# 이 리스트만 허용
+CORS_ORIGIN_WHITELIST = (
+    'localhost:8080',
+    'localhost:8000',
+    "weather-sound.com",
+    "weathersoundtest2-dev.ap-northeast-2.elasticbeanstalk.com",
+)
+# 허용되는 메소드
+CORS_ALLOW_METHODS = (
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+)
+# 허용되는 헤더들 -> http문제도 여기서 해결은 가능
+CORS_ALLOW_HEADERS = (
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+)
 
 # Application definition
 
@@ -65,6 +98,7 @@ INSTALLED_APPS = [
     'music',
     'rest_framework',
     'rest_framework.authtoken',
+    'corsheaders',
     'utils',
 
     # "django_extensions",
@@ -83,7 +117,6 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 12,
 }
 
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -92,6 +125,13 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    ##########
+    # Custom #
+    ##########
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
+
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -154,6 +194,5 @@ USE_TZ = True
 # STATIC_URL = '/static/'
 STATIC_DIR = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIRS = [
-    #STATIC_DIR,
+    # STATIC_DIR,
 ]
-

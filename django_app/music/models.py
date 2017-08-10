@@ -73,13 +73,13 @@ class WeatherManager(models.Manager):
     weather_dict = {
         "clear-day": "sunny",
         "clear-night": "sunny",
-        "partly-cloudy-day": "sunny",
-        "partly-cloudy-night": "sunny",
         "rain": "rainy",
         "snow": "snowy",
         "wind": "sunny",
         "sleet": "foggy",
         "fog": "foggy",
+        "partly-cloudy-day": "cloudy",
+        "partly-cloudy-night": "cloudy",
         "cloudy": "cloudy",
 
     }
@@ -127,7 +127,7 @@ class WeatherManager(models.Manager):
 
 
 class Weather(models.Model):
-    objects = WeatherManager()
+    object = WeatherManager()
     location = models.CharField(  # 지명 ex) 서울시 서초구 반포동
         max_length=100,
         unique=True,
