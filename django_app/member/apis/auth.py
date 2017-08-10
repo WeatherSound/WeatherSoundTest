@@ -68,7 +68,7 @@ class CustomAuthTokenView(APIView):
         if authenticate(
                 username=request.data.get('email'),
                 password=request.data.get('password')
-        ):
+            ):
             token, created = Token.objects.get_or_create(user=user)
             user_serializer = UserListSerializers(user)
             content = {
