@@ -42,5 +42,3 @@ MEDIA_ROOT = os.path.join(ROOT_DIR, '.media')
 # 서버 실행시 구별용 출력
 print('@@@@@@@@@@ DEBUG: ', DEBUG)
 print('@@@@@@@@@@ ALLOWED_HOSTS: ', ALLOWED_HOSTS)
-
-# add_mp3_and_album_image_in_database()

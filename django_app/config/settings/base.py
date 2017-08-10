@@ -35,7 +35,6 @@ SECRET_KEY = config_secret_common['django']['secret_key']
 GOOGLE_API_KEY = config_secret_common['google']['geocoding_api_key']
 DARKSKY_API_KEY = config_secret_common['weatherinfo']['darksky_api_key']
 
-
 ###
 # FACEBOOK
 FACEBOOK_API_KEY = config_secret_common['facebook']['facebook_api_key']
@@ -53,14 +52,16 @@ AUTH_USER_MODEL = 'member.MyUser'
 # DJANGO CORS_HEAD
 # CORS_ALLOW_CREDENTIALS = False
 CORS_ALLOW_CREDENTIALS = True
+# 모든 input 허용 -> 없에도 될듯
 CORS_ORIGIN_ALLOW_ALL = True
-
+# 이 리스트만 허용
 CORS_ORIGIN_WHITELIST = (
     'localhost:8080',
     'localhost:8000',
     "weather-sound.com",
     "weathersoundtest2-dev.ap-northeast-2.elasticbeanstalk.com",
 )
+# 허용되는 메소드
 CORS_ALLOW_METHODS = (
     'DELETE',
     'GET',
@@ -69,6 +70,7 @@ CORS_ALLOW_METHODS = (
     'POST',
     'PUT',
 )
+# 허용되는 헤더들 -> http문제도 여기서 해결은 가능
 CORS_ALLOW_HEADERS = (
     'accept',
     'accept-encoding',
@@ -80,10 +82,6 @@ CORS_ALLOW_HEADERS = (
     'x-csrftoken',
     'x-requested-with',
 )
-# CORS_ORIGIN_WHITELIST = (
-#     'localhost:8080',
-#     'localhost:8000',
-# )
 
 # Application definition
 
