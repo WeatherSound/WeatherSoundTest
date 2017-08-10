@@ -14,6 +14,10 @@ urlpatterns = [
         apis.UserListView.as_view(),
         name='signup'
         ),
+    url(r'^status/$',
+        apis.CustomStatusView.as_view(),
+        name='status'
+        ),
     url(r'^login/$',
         apis.CustomAuthTokenView.as_view(),
         name='login'
