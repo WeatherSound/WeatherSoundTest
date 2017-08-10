@@ -11,13 +11,13 @@ urlpatterns = [
         name='userdetail'
         ),
     url(r'signup/$',
-        apis.UserListView.as_view(),
+        apis.UserSignupView.as_view(),
         name='signup'
         ),
-    url(r'^status/$',
-        apis.CustomStatusView.as_view(),
-        name='status'
-        ),
+    # url(r'^status/$',
+    #     apis.CustomStatusView.as_view(),
+    #     name='status'
+    #     ),
     url(r'^login/$',
         apis.CustomAuthTokenView.as_view(),
         name='login'

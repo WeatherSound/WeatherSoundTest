@@ -3,6 +3,8 @@ from django.core.validators import validate_email
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
+from utils import CustomImageField
+
 User = get_user_model()
 
 __all__ = (
@@ -11,18 +13,7 @@ __all__ = (
 )
 
 
-class UserSignupSerializers(serializers.Serializer):
-    email = serializers.CharField(
-        max_length=50
-    )
-    nickname = serializers.CharField(
-        label="nickname",
-        max_length=50
-    )
-    img_profile = serializers.ImageField(
-        label='Profile Image',
-        required=False,
-    )
+class UserSignupSerializers(serializers.ModelSerializer):
     password1 = serializers.CharField(
         write_only=True,
         style={'input_type': 'password'}
@@ -32,7 +23,37 @@ class UserSignupSerializers(serializers.Serializer):
         style={'input_type': 'password'}
     )
 
-    def validate_emailfield(self, email):
+    class Meta:
+        model = User
+        fields = (
+            'email',
+            'username',
+            'img_profile',
+            'password1',
+            'password2',
+        )
+
+    # def validate_email(self, email):
+    #     if User.objects.filter(email=email).exists():
+    #         raise serializers.ValidationError(
+    #             _('Email already exists.')
+    #         )
+    #     elif validate_email(email):
+    #         raise serializers.ValidationError(
+    #             _('Please enter a proper email account.')
+    #         )
+    #     return email
+    #
+    # def validate_nickname(self, nickname):
+    #     if
+    #     return nickname
+
+    def validate(self, data):
+        email = data.get('email')
+        nickname = data.get('username')
+        password1 = data.get('password1')
+        password2 = data.get('password2')
+
         if User.objects.filter(email=email).exists():
             raise serializers.ValidationError(
                 _('Email already exists.')
@@ -41,29 +62,22 @@ class UserSignupSerializers(serializers.Serializer):
             raise serializers.ValidationError(
                 _('Please enter a proper email account.')
             )
-        return email
-
-    def validate_nickname(self, nickname):
-        if User.objects.filter(username=nickname).exists():
+        elif User.objects.filter(username=nickname).exists():
             raise serializers.ValidationError(
                 _('Nickname already exists.')
             )
-        return nickname
-
-    def validate(self, attrs):
-        password1 = attrs.get('password1')
-        password2 = attrs.get('password2')
-        if password1 != password2:
+        elif password1 != password2:
             raise serializers.ValidationError(
                 _('Password did not match.')
             )
-        return attrs
+        return data
 
     def save(self):
         user = User.objects.create_user(
             email=self.validated_data.get('email'),
-            username=self.validated_data.get('nickname'),
-            password=self.validated_data.get('password1'),
+            username=self.validated_data.get('username'),
+            password=self.validated_data.get('password2'),
+            img_profile=self.validated_data.get('img_profile'),
             # TODO 계정활성화 메일 보낼 시 is_active는 False로 돌릴 것.
         )
         return user

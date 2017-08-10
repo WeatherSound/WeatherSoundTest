@@ -5,6 +5,7 @@ from eyed3.compat import unicode
 from rest_framework import status
 from rest_framework.authentication import BasicAuthentication, TokenAuthentication
 from rest_framework.authtoken.models import Token
+from rest_framework.exceptions import APIException
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -15,7 +16,7 @@ User = get_user_model()
 
 __all__ = (
     'CustomAuthTokenView',
-    'CustomStatusView',
+     # 'CustomStatusView',
     'UserLogoutView',
 )
 
@@ -48,15 +49,15 @@ class CustomAuthTokenView(APIView):
     #         }
     #         return Response(content, status=status.HTTP_401_UNAUTHORIZED)
 
-    def get(self, request, format=None):
-        content = {
-            'user': unicode(request.user),
-            'auth': unicode(request.auth),
-        }
-        return Response(
-            content,
-            status=status.HTTP_200_OK
-        )
+    # def get(self, request, format=None):
+    #     content = {
+    #         'user': unicode(request.user),
+    #         'auth': unicode(request.auth),
+    #     }
+    #     return Response(
+    #         content,
+    #         status=status.HTTP_200_OK
+    #     )
 
     def post(self, request, format=None, *args, **kwargs):
         """
@@ -66,9 +67,9 @@ class CustomAuthTokenView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         if authenticate(
-                username=request.data.get('email'),
-                password=request.data.get('password')
-            ):
+            username=request.data.get('email'),
+            password=request.data.get('password')
+        ):
             token, created = Token.objects.get_or_create(user=user)
             user_serializer = UserListSerializers(user)
             content = {
@@ -82,7 +83,7 @@ class CustomAuthTokenView(APIView):
             )
         else:
             content = {
-                "detail": "아이디 또는 비밀번호가 일치하지 않습니다."
+                "detail": "아이디 또는 비밀번호가 일치하지 않습니다.",
             }
             return Response(
                 content,
@@ -90,29 +91,27 @@ class CustomAuthTokenView(APIView):
             )
 
 
-class CustomStatusView(APIView):
-    authentication_classes = (TokenAuthentication, BasicAuthentication)
-    permission_classes = (AllowAny,)
-    serializer_class = CustomAuthTokenSerializers
-
-    def post(self, request, format=None):
-        serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        user_serializer = UserRetrieveUpdateDestroySerializers
-        response_data = {}
-        response_data['UserInfo'] = user_serializer.data
-        if user.is_authenticated():
-            content = {
-                "detail": "로그인중입니다.",
-                "UserInfo": response_data.values()
-            }
-            return Response(content, status=status.HTTP_200_OK)
-        else:
-            content = {
-                "detail": "로그인하지 않았습니다."
-            }
-            return Response(content, status=status.HTTP_401_UNAUTHORIZED)
+# class CustomStatusView(APIView):
+#     authentication_classes = (TokenAuthentication, BasicAuthentication)
+#     permission_classes = (AllowAny,)
+#     serializer_class = CustomAuthTokenSerializers
+#
+#     def post(self, request, format=None):
+#         serializer = self.serializer_class(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         user = serializer.validated_data['user']
+#         user_serializer = UserListSerializers
+#         if user.is_authenticated():
+#             content = {
+#                 "detail": "로그인중입니다.",
+#                 "userInfo": user_serializer.data
+#             }
+#             return Response(content, status=status.HTTP_200_OK)
+#         else:
+#             content = {
+#                 "detail": "로그인하지 않았습니다."
+#             }
+#             return Response(content, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class UserLogoutView(APIView):

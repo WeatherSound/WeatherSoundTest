@@ -13,12 +13,29 @@ User = get_user_model()
 
 __all__ = (
     'UserListView',
+    'UserSignupView',
     'AccountActivationView',
 )
 
 
-class UserListView(generics.ListCreateAPIView,
-                   generics.RetrieveUpdateAPIView):
+class UserListView(generics.ListCreateAPIView):
+    """
+    기본 UserList 뷰
+    """
+    # TODO 개발 완료 후 IsAdminUser로 권한 변경하기
+    permission_classes = (AllowAny,)
+    queryset = User.objects.all().order_by('pk')
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return UserListSerializers
+
+    def pre_save(self, obj):
+        if self.request.user.is_admin:
+            obj.owner = self.request.user
+
+
+class UserSignupView(generics.RetrieveUpdateAPIView):
     """
     GET 요청 : 유저 리스트 반환
     POST 요청 : 회원가입 시리얼라이저 반환, 회원가입 가능
@@ -43,7 +60,13 @@ class UserListView(generics.ListCreateAPIView,
         serializer_class = UserSignupSerializers
         serializer = serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        user = serializer.save()
+        print(type(user))
+        if request.data.get('img_profile'):
+            user.img_profile = request.data.get('img_profile')
+            user.save()
+        user_serializer = UserListSerializers(user)
+
         # TODO 계정 활성화 메일 보내기 + celery 나중에 도입..
         # email = serializer.validated_data['email']
         # user = User.objects.get(email=email)
@@ -61,8 +84,8 @@ class UserListView(generics.ListCreateAPIView,
         # msg = 'Account activation email sent. Please check your email.'
         # super(UserListView, self).post(self, request, *args, **kwargs)
         content = {
-            'email': request.data['email'],
-            'nickname': request.data['nickname'],
+            'result': serializer.data,
+            'userInfo': user_serializer.data,
             # TODO 이메일계정활성화 기능 구현 후 user 정보 자체를 반환하기
             # 'img_profile': request.data['img_profile'],
         }
