@@ -17,7 +17,8 @@ __all__ = (
 )
 
 
-class UserListView(generics.ListCreateAPIView):
+class UserListView(generics.ListCreateAPIView,
+                   generics.RetrieveUpdateAPIView):
     """
     GET 요청 : 유저 리스트 반환
     POST 요청 : 회원가입 시리얼라이저 반환, 회원가입 가능
@@ -86,7 +87,7 @@ class AccountActivationView(APIView):
             django_login(request, user)
             content = {
                 'user': user.email,
-                'result': 'Successfully acctivated the account. Enjoy!',
+                'result': 'Successfully activated the account. Enjoy!',
             }
             return Response(
                 content,

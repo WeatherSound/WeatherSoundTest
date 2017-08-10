@@ -1,6 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
-from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
 User = get_user_model()
@@ -36,6 +34,7 @@ class UserRetrieveUpdateDestroySerializers(serializers.ModelSerializer):
     """
     유저 정보(이메일 / 유저명 / 프로필이미지) 변경
     """
+
     class Meta:
         model = User
         fields = (
@@ -60,7 +59,7 @@ class UserRetrieveUpdateDestroySerializers(serializers.ModelSerializer):
         instance.img_profile = validated_data.get(
             'img_profile',
             instance.img_profile
-        )
+        ).split("?")[0]
         instance.save()
         return instance
 
@@ -107,14 +106,9 @@ class UserPasswordUpdateSerializers(serializers.ModelSerializer):
     #         )
 
     def validate(self, attrs):
-        email = attrs.get('email')
-        print(email)
         password = attrs.get('password')
-        print(password)
         new_password1 = attrs.get('new_password1')
-        print(new_password1)
         new_password2 = attrs.get('new_password2')
-        print(new_password2)
         if password:
             if not (password and new_password1 and new_password2):
                 return serializers.ValidationError(
@@ -125,28 +119,3 @@ class UserPasswordUpdateSerializers(serializers.ModelSerializer):
                     "새로운 비밀번호와 확인용 비밀번호가 일치하지 않습니다."
                 )
             return attrs
-            # user = get_object_or_404(User, pk=attrs.get['pk'])
-            # if not user.check_password(password):
-            #     return serializers.ValidationError(
-            #         "기존 비밀번호가 일치하지 않습니다."
-            #     )
-            # elif not (new_password1 and new_password2):
-            #     return serializers.ValidationError(
-            #         "필수 입력칸입니다."
-            #     )
-            # elif new_password1 != new_password2:
-            #     return serializers.ValidationError(
-            #         "새로운 비밀번호와 확인용 비밀번호가 일치하지 않습니다."
-            #     )
-            # return attrs
-
-    # def update(self, instance, validated_data):
-    #     # # get 예외처리?
-    #     instance.set_password('new_password2')
-    #     # instance.password = validated_data.get(
-    #     #     'new_password2',
-    #     #     instance.password,
-    #     # )
-    #     instance.save()
-    #     return instance
-

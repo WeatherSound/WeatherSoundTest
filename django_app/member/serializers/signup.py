@@ -19,6 +19,10 @@ class UserSignupSerializers(serializers.Serializer):
         label="nickname",
         max_length=50
     )
+    img_profile = serializers.ImageField(
+        label='Profile Image',
+        required=False,
+    )
     password1 = serializers.CharField(
         write_only=True,
         style={'input_type': 'password'}

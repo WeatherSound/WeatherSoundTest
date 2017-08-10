@@ -35,6 +35,7 @@ SECRET_KEY = config_secret_common['django']['secret_key']
 GOOGLE_API_KEY = config_secret_common['google']['geocoding_api_key']
 DARKSKY_API_KEY = config_secret_common['weatherinfo']['darksky_api_key']
 
+
 ###
 # FACEBOOK
 FACEBOOK_API_KEY = config_secret_common['facebook']['facebook_api_key']
