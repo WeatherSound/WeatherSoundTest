@@ -51,7 +51,15 @@ AUTH_USER_MODEL = 'member.MyUser'
 
 # DJANGO CORS_HEAD
 # CORS_ALLOW_CREDENTIALS = False
+CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ORIGIN_WHITELIST = (
+    'localhost:8080',
+    'localhost:8000',
+    "weather-sound.com",
+    "weathersoundtest2-dev.ap-northeast-2.elasticbeanstalk.com",
+)
 CORS_ALLOW_METHODS = (
     'DELETE',
     'GET',
@@ -91,6 +99,7 @@ INSTALLED_APPS = [
     'music',
     'rest_framework',
     'rest_framework.authtoken',
+    'corsheaders',
     'utils',
 
     # "django_extensions",
