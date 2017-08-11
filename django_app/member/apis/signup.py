@@ -26,6 +26,7 @@ class UserListView(generics.ListAPIView):
     # TODO 개발 완료 후 IsAdminUser로 권한 변경하기
     permission_classes = (AllowAny,)
     queryset = User.objects.all().order_by('pk')
+    pagination_class = None
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -46,6 +47,7 @@ class UserSignupView(generics.ListCreateAPIView):
     """
     permission_classes = (AllowAny,)
     queryset = User.objects.all().order_by('pk')
+    pagination_class = None
 
     def get_serializer_class(self):
         if self.request.method == 'GET':

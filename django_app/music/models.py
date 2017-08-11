@@ -46,6 +46,9 @@ class Music(models.Model):
         max_length=100,
         blank=True,
     )
+    lyrics = models.TextField(
+        blank=True,
+    )
     sunny = models.PositiveIntegerField(
         verbose_name='맑음', default=0)
     foggy = models.PositiveIntegerField(
