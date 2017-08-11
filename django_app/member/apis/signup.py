@@ -64,6 +64,7 @@ class UserSignupView(generics.ListCreateAPIView):
         serializer = serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+
         # img_profile에 새로운 파일을 올릴 경우에는 기본 파일을
         # 사용자가 넣은 파일로 바꿔주고 저장.
         if request.data.get('img_profile'):

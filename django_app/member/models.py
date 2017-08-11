@@ -70,7 +70,7 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
         (USER_TYPE_FACEBOOK, 'Facebook'),
     )
     user_type = models.CharField(
-        max_length=1,
+        max_length=10,
         choices=CHOICES_USER_TYPE,
         default=USER_TYPE_DJANGO
     )
