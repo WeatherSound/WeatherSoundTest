@@ -23,28 +23,28 @@ class UserSignupSerializers(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'email',
             'username',
+            'nickname',
             'img_profile',
             'password1',
             'password2',
         )
 
     def validate(self, data):
-        email = data.get('email')
-        nickname = data.get('username')
+        username = data.get('username')
+        nickname = data.get('nickname')
         password1 = data.get('password1')
         password2 = data.get('password2')
 
-        if User.objects.filter(email=email).exists():
+        if User.objects.filter(username=username).exists():
             raise serializers.ValidationError(
-                _('Email already exists.')
+                _('Email account already exists.')
             )
-        elif validate_email(email):
+        elif validate_email(username):
             raise serializers.ValidationError(
                 _('Please enter a proper email account.')
             )
-        elif User.objects.filter(username=nickname).exists():
+        elif User.objects.filter(nickname=nickname).exists():
             raise serializers.ValidationError(
                 _('Nickname already exists.')
             )
@@ -56,8 +56,8 @@ class UserSignupSerializers(serializers.ModelSerializer):
 
     def save(self):
         user = User.objects.create_user(
-            email=self.validated_data.get('email'),
             username=self.validated_data.get('username'),
+            nickname=self.validated_data.get('nickname'),
             password=self.validated_data.get('password2'),
             img_profile=self.validated_data.get('img_profile'),
             # TODO 계정활성화 메일 보낼 시 is_active는 False로 돌릴 것.

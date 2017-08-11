@@ -14,7 +14,6 @@ User = get_user_model()
 
 __all__ = (
     'CustomAuthTokenView',
-    # 'CustomStatusView',
     'UserLogoutView',
 )
 
@@ -27,25 +26,6 @@ class CustomAuthTokenView(APIView):
     authentication_classes = (TokenAuthentication, BasicAuthentication)
     permission_classes = (AllowAny,)
     serializer_class = CustomAuthTokenSerializers
-
-    # def get(self, request, format=None):
-    #     serializer = self.serializer_class(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     user = serializer.validated_data['user']
-    #     user_serializer = UserRetrieveUpdateDestroySerializers
-    #     response_data = {}
-    #     response_data['UserInfo'] = user_serializer.data
-    #     if user.is_authenticated():
-    #         content = {
-    #             "detail": "로그인중입니다.",
-    #             "UserInfo": response_data.values()
-    #         }
-    #         return Response(content, status=status.HTTP_200_OK)
-    #     else:
-    #         content = {
-    #             "detail": "로그인하지 않았습니다."
-    #         }
-    #         return Response(content, status=status.HTTP_401_UNAUTHORIZED)
 
     # def get(self, request, format=None):
     #     content = {
@@ -65,7 +45,7 @@ class CustomAuthTokenView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         if authenticate(
-                username=request.data.get('email'),
+                username=request.data.get('username'),
                 password=request.data.get('password')
         ):
             token, created = Token.objects.get_or_create(user=user)
@@ -87,29 +67,6 @@ class CustomAuthTokenView(APIView):
                 content,
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-
-# class CustomStatusView(APIView):
-#     authentication_classes = (TokenAuthentication, BasicAuthentication)
-#     permission_classes = (AllowAny,)
-#     serializer_class = CustomAuthTokenSerializers
-#
-#     def post(self, request, format=None):
-#         serializer = self.serializer_class(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         user = serializer.validated_data['user']
-#         user_serializer = UserListSerializers
-#         if user.is_authenticated():
-#             content = {
-#                 "detail": "로그인중입니다.",
-#                 "userInfo": user_serializer.data
-#             }
-#             return Response(content, status=status.HTTP_200_OK)
-#         else:
-#             content = {
-#                 "detail": "로그인하지 않았습니다."
-#             }
-#             return Response(content, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class UserLogoutView(APIView):
