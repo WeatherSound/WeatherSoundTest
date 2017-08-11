@@ -19,7 +19,7 @@ __all__ = (
 )
 
 
-class UserListView(generics.ListCreateAPIView):
+class UserListView(generics.ListAPIView):
     """
     기본 UserList 뷰
     """
@@ -36,7 +36,7 @@ class UserListView(generics.ListCreateAPIView):
             obj.owner = self.request.user
 
 
-class UserSignupView(generics.RetrieveUpdateAPIView):
+class UserSignupView(generics.ListCreateAPIView):
     """
     GET 요청 : 유저 리스트 반환
     POST 요청 : 회원가입 시리얼라이저 반환, 회원가입 가능
