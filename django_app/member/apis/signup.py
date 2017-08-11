@@ -11,6 +11,7 @@ from member.tokens import account_activation_token
 
 User = get_user_model()
 
+
 __all__ = (
     'UserListView',
     'UserSignupView',
@@ -18,7 +19,7 @@ __all__ = (
 )
 
 
-class UserListView(generics.ListCreateAPIView):
+class UserListView(generics.ListAPIView):
     """
     기본 UserList 뷰
     """
@@ -35,7 +36,7 @@ class UserListView(generics.ListCreateAPIView):
             obj.owner = self.request.user
 
 
-class UserSignupView(generics.RetrieveUpdateAPIView):
+class UserSignupView(generics.ListCreateAPIView):
     """
     GET 요청 : 유저 리스트 반환
     POST 요청 : 회원가입 시리얼라이저 반환, 회원가입 가능
@@ -61,7 +62,8 @@ class UserSignupView(generics.RetrieveUpdateAPIView):
         serializer = serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        print(type(user))
+        # img_profile에 새로운 파일을 올릴 경우에는 기본 파일을
+        # 사용자가 넣은 파일로 바꿔주고 저장.
         if request.data.get('img_profile'):
             user.img_profile = request.data.get('img_profile')
             user.save()
@@ -87,10 +89,11 @@ class UserSignupView(generics.RetrieveUpdateAPIView):
             'result': serializer.data,
             'userInfo': user_serializer.data,
             # TODO 이메일계정활성화 기능 구현 후 user 정보 자체를 반환하기
-            # 'img_profile': request.data['img_profile'],
-            # 'img_profile': request.data['img_profile'],
         }
-        return Response(content, status=status.HTTP_201_CREATED)
+        return Response(
+            content,
+            status=status.HTTP_201_CREATED
+        )
 
 
 class AccountActivationView(APIView):
