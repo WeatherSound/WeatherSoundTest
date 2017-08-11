@@ -1,26 +1,25 @@
 from django.contrib.auth import get_user_model
-from rest_framework import generics, permissions, status
-from rest_framework.exceptions import ValidationError
-from rest_framework.response import Response
 from django.contrib.auth import update_session_auth_hash
-
-from member.serializers.profile_all import UserPasswordUpdateSerializers, UserListSerializers
+from rest_framework import generics, permissions, status
+from rest_framework.response import Response
+from member.serializers.profile_all import UserPasswordUpdateSerializers, UserListSerializers, \
+    UserRetrieveUpdateDestroySerializers
 from permissions import ObjectIsRequestUser
 
 __all__ = (
-    'UserRetrieveUpdateDestroyView1',
-    'UserPasswordUpdateView1',
+    'UserRetrieveUpdateDestroyView',
+    'UserPasswordUpdateView',
 )
 
 User = get_user_model()
 
 
-class UserRetrieveUpdateDestroyView1(generics.RetrieveUpdateDestroyAPIView):
+class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     """
     사용자 email, username, img_profile 변경
     """
     queryset = User.objects.all()
-    serializer_class = UserListSerializers
+    serializer_class = UserRetrieveUpdateDestroySerializers
     permission_classes = (
         permissions.IsAuthenticatedOrReadOnly,
         ObjectIsRequestUser,
@@ -34,7 +33,7 @@ class UserRetrieveUpdateDestroyView1(generics.RetrieveUpdateDestroyAPIView):
         return Response(content, status=status.HTTP_202_ACCEPTED)
 
 
-class UserPasswordUpdateView1(generics.RetrieveUpdateAPIView):
+class UserPasswordUpdateView(generics.RetrieveUpdateAPIView):
     """
     사용자 비밀번호 변경
     """

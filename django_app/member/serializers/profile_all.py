@@ -4,13 +4,13 @@ from rest_framework import serializers
 User = get_user_model()
 
 __all__ = (
-    'UserListSerializers1',
-    'UserRetrieveUpdateDestroySerializers1',
-    'UserPasswordUpdateSerializers1',
+    'UserListSerializers',
+    'UserRetrieveUpdateDestroySerializers',
+    'UserPasswordUpdateSerializers',
 )
 
 
-class UserListSerializers1(serializers.ModelSerializer):
+class UserListSerializers(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
@@ -30,9 +30,9 @@ class UserListSerializers1(serializers.ModelSerializer):
         )
 
 
-class UserRetrieveUpdateDestroySerializers1(serializers.ModelSerializer):
+class UserRetrieveUpdateDestroySerializers(serializers.ModelSerializer):
     """
-    유저 정보(이메일 / 유저명 / 프로필이미지) 변경
+    유저 정보(이메일 / 유저명 / 프로필이미지 / 비밀번호) 변경
     """
 
     class Meta:
@@ -42,29 +42,24 @@ class UserRetrieveUpdateDestroySerializers1(serializers.ModelSerializer):
             'username',
             'img_profile',
         )
-        read_only = (
-            'email',
-        )
 
     def update(self, instance, validated_data):
-        # get 예외처리?
-        instance.email = validated_data.get(
-            'email',
-            instance.email,
-        )
+        print(111111111111,validated_data)
         instance.username = validated_data.get(
             'username',
             instance.username
         )
+
         instance.img_profile = validated_data.get(
             'img_profile',
             instance.img_profile
-        ).split("?")[0]
+        )
+
         instance.save()
         return instance
 
 
-class UserPasswordUpdateSerializers1(serializers.ModelSerializer):
+class UserPasswordUpdateSerializers(serializers.ModelSerializer):
     """
     유저 비밀번호 변경 시리얼라이저
     """
