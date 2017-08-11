@@ -14,10 +14,6 @@ urlpatterns = [
         apis.UserSignupView.as_view(),
         name='signup'
         ),
-    # url(r'^status/$',
-    #     apis.CustomStatusView.as_view(),
-    #     name='status'
-    #     ),
     url(r'^login/$',
         apis.CustomAuthTokenView.as_view(),
         name='login'
@@ -31,7 +27,7 @@ urlpatterns = [
         name='userinfo_update'
         ),
     url(r'^(?P<pk>\d+)/edit/password/$',
-        apis.UserPasswordUpdateView.as_view(),
+        apis.UserPasswordUpdateView1.as_view(),
         name='edit_password'
         ),
     url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',

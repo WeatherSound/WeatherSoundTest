@@ -15,11 +15,13 @@ class CustomAuthTokenSerializers(serializers.ModelSerializer):
     장고 기본 로그인에 필요한 이메일과 비밀번호를 받아
     rest 페이지에서 token값 및 이메일 값을 전달
     """
-    email = serializers.CharField(
+    username = serializers.CharField(
         max_length=50,
+        help_text='example@example.com'
     )
     password = serializers.CharField(
         max_length=50,
+        help_text='It has to be over 8 letters.',
         style={'input_type': 'password'}
     )
 
@@ -27,29 +29,29 @@ class CustomAuthTokenSerializers(serializers.ModelSerializer):
         model = User
         fields = (
             'pk',
-            'email',
+            'username',
             'password',
         )
         read_only = (
-            'email',
+            'username',
         )
 
     def validate(self, attrs):
-        email = attrs.get('email')
+        username = attrs.get('username')
         password = attrs.get('password')
 
-        if not email:
+        if not username:
             raise serializers.ValidationError(
                 "이메일을 입력하세요."
             )
-        elif validate_email(email):
+        elif validate_email(username):
             raise serializers.ValidationError(
                 "유효한 이메일 계정이 아닙니다 정확히 입력해주세요."
             )
 
-        if email and password:
-            if User.objects.filter(email=email).exists():
-                user = User.objects.get(email=email)
+        if username and password:
+            if User.objects.filter(username=username).exists():
+                user = User.objects.get(username=username)
                 if not user.is_active:
                     msg = '유저 계정이 비활성화된 상태입니다. 이메일을 확인하세요.'
                     raise serializers.ValidationError(msg)

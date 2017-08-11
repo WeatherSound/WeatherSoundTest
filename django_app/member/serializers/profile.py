@@ -15,15 +15,15 @@ class UserListSerializers1(serializers.ModelSerializer):
         model = User
         fields = (
             'pk',
-            'email',
             'username',
+            'nickname',
             'img_profile',
             'password',
             'is_active',
             'is_admin',
         )
         read_only = (
-            'email',
+            'username',
         )
         write_only = (
             'password',
@@ -38,23 +38,23 @@ class UserRetrieveUpdateDestroySerializers1(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'email',
             'username',
+            'nickname',
             'img_profile',
         )
         read_only = (
-            'email',
+            'username',
         )
 
     def update(self, instance, validated_data):
         # get 예외처리?
-        instance.email = validated_data.get(
-            'email',
-            instance.email,
-        )
         instance.username = validated_data.get(
             'username',
-            instance.username
+            instance.username,
+        )
+        instance.nickname = validated_data.get(
+            'nickname',
+            instance.nickname
         )
         instance.img_profile = validated_data.get(
             'img_profile',

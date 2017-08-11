@@ -1,10 +1,9 @@
 from django.contrib.auth import get_user_model
-from rest_framework import generics, permissions, status
-from rest_framework.exceptions import ValidationError
-from rest_framework.response import Response
 from django.contrib.auth import update_session_auth_hash
+from rest_framework import generics, permissions, status
+from rest_framework.response import Response
 
-from member.serializers.profile_all import UserPasswordUpdateSerializers, UserListSerializers
+from member.serializers.profile import UserListSerializers1, UserPasswordUpdateSerializers1
 from permissions import ObjectIsRequestUser
 
 __all__ = (
@@ -17,10 +16,10 @@ User = get_user_model()
 
 class UserRetrieveUpdateDestroyView1(generics.RetrieveUpdateDestroyAPIView):
     """
-    사용자 email, username, img_profile 변경
+    사용자 username, img_profile 변경
     """
     queryset = User.objects.all()
-    serializer_class = UserListSerializers
+    serializer_class = UserListSerializers1
     permission_classes = (
         permissions.IsAuthenticatedOrReadOnly,
         ObjectIsRequestUser,
@@ -39,7 +38,7 @@ class UserPasswordUpdateView1(generics.RetrieveUpdateAPIView):
     사용자 비밀번호 변경
     """
     queryset = User.objects.all()
-    serializer_class = UserPasswordUpdateSerializers
+    serializer_class = UserPasswordUpdateSerializers1
     permission_classes = (
         permissions.IsAuthenticatedOrReadOnly,
         ObjectIsRequestUser,
@@ -48,9 +47,12 @@ class UserPasswordUpdateView1(generics.RetrieveUpdateAPIView):
     def patch(self, request, *args, **kwargs):
         user = User.objects.get(pk=kwargs['pk'])
         serializer = self.get_serializer(data=request.data)
+        print(1111111111111111111111111)
         if serializer.is_valid():
+            print(222222222222222222222222)
             serializer = self.get_serializer(data=request.data)
-            user_serializer = UserListSerializers(data=request.data)
+            print(333333333333333333333333)
+            user_serializer = UserListSerializers1(data=request.data)
             if not user.check_password(request.data.get('password')):
                 raise serializer.ValidationError(
                     "기존 비밀번호가 일치하지 않습니다."
@@ -60,10 +62,12 @@ class UserPasswordUpdateView1(generics.RetrieveUpdateAPIView):
 
             # make sure the user stays logged in
             update_session_auth_hash(request, request.user)
+            print(44444444444444444444444444)
             content = {
                 'detail': "비밀번호가 변경되었습니다.",
                 'userInfo': user_serializer.data,
             }
+            print(333333333333333333333333)
             return Response(content, status=status.HTTP_200_OK)
 
         content = {

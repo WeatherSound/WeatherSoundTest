@@ -88,7 +88,7 @@ class UserSignupView(generics.ListCreateAPIView):
         # msg = 'Account activation email sent. Please check your email.'
         # super(UserListView, self).post(self, request, *args, **kwargs)
         content = {
-            'result': serializer.data,
+            # 'result': serializer.data,
             'userInfo': user_serializer.data,
             # TODO 이메일계정활성화 기능 구현 후 user 정보 자체를 반환하기
         }
@@ -114,7 +114,7 @@ class AccountActivationView(APIView):
             user.save()
             django_login(request, user)
             content = {
-                'user': user.email,
+                'user': user.username,
                 'result': 'Successfully activated the account. Enjoy!',
             }
             return Response(
