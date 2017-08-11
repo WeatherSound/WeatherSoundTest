@@ -3,13 +3,10 @@ from django.core.validators import validate_email
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
-from utils import CustomImageField
-
 User = get_user_model()
 
 __all__ = (
     'UserSignupSerializers',
-
 )
 
 
@@ -32,21 +29,6 @@ class UserSignupSerializers(serializers.ModelSerializer):
             'password1',
             'password2',
         )
-
-    # def validate_email(self, email):
-    #     if User.objects.filter(email=email).exists():
-    #         raise serializers.ValidationError(
-    #             _('Email already exists.')
-    #         )
-    #     elif validate_email(email):
-    #         raise serializers.ValidationError(
-    #             _('Please enter a proper email account.')
-    #         )
-    #     return email
-    #
-    # def validate_nickname(self, nickname):
-    #     if
-    #     return nickname
 
     def validate(self, data):
         email = data.get('email')

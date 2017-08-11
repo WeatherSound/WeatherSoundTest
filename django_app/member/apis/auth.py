@@ -1,22 +1,20 @@
 from django.contrib.auth import get_user_model, logout as django_logout, login as django_login, authenticate
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext_lazy as _
-from eyed3.compat import unicode
 from rest_framework import status
 from rest_framework.authentication import BasicAuthentication, TokenAuthentication
 from rest_framework.authtoken.models import Token
-from rest_framework.exceptions import APIException
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ..serializers import CustomAuthTokenSerializers, UserRetrieveUpdateDestroySerializers, UserListSerializers
+from ..serializers import CustomAuthTokenSerializers, UserListSerializers
 
 User = get_user_model()
 
 __all__ = (
     'CustomAuthTokenView',
-     # 'CustomStatusView',
+    # 'CustomStatusView',
     'UserLogoutView',
 )
 
@@ -67,8 +65,8 @@ class CustomAuthTokenView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         if authenticate(
-            username=request.data.get('email'),
-            password=request.data.get('password')
+                username=request.data.get('email'),
+                password=request.data.get('password')
         ):
             token, created = Token.objects.get_or_create(user=user)
             user_serializer = UserListSerializers(user)
