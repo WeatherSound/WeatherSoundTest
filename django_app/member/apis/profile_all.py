@@ -9,7 +9,6 @@ from permissions import ObjectIsRequestUser
 
 __all__ = (
     'UserRetrieveUpdateDestroyView',
-    # 'UserPasswordUpdateView',
 )
 
 User = get_user_model()
@@ -53,14 +52,13 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
                 user.set_password(request.data.get('new_password2'))
                 print(request.data.get('new_password2'))
                 print('비번체크 통과했으므로 비밀번호를 새로 설정한다')
-                update_info.nickname = request.data.get('nickname', update_info.img_profile)
+                update_info.nickname = request.data.get('nickname', update_info.nickname)
                 update_info.img_profile = request.data.get('img_profile', update_info.img_profile)
                 print(update_info)
                 update_info.save()
                 print('유저 저장')
 
                 user_serializer = UserListSerializers(update_info, partial=True)
-                # user_serializer.is_valid(raise_exception=True)
 
                 print(user_serializer.data)
                 content = {
@@ -79,7 +77,7 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
         else:
-            update_info.nickname = request.data.get('nickname', update_info.img_profile)
+            update_info.nickname = request.data.get('nickname', update_info.nickname)
             update_info.img_profile = request.data.get('img_profile', update_info.img_profile)
             update_info.save()
             user_serializer = UserListSerializers(update_info, partial=True)

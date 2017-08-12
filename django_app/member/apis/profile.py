@@ -8,7 +8,6 @@ from permissions import ObjectIsRequestUser
 
 __all__ = (
     'UserRetrieveUpdateDestroyView1',
-    'UserRetrieveUpdateDestroyViewTest',
     'UserPasswordUpdateView1',
 )
 
@@ -32,15 +31,6 @@ class UserRetrieveUpdateDestroyView1(generics.RetrieveUpdateDestroyAPIView):
             "detail": "계정이 삭제되었습니다."
         }
         return Response(content, status=status.HTTP_202_ACCEPTED)
-
-
-class UserRetrieveUpdateDestroyViewTest(generics.RetrieveUpdateDestroyAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserListSerializers1
-    permission_classes = (
-        permissions.IsAuthenticatedOrReadOnly,
-        ObjectIsRequestUser,
-    )
 
 
 class UserPasswordUpdateView1(generics.RetrieveUpdateAPIView):
