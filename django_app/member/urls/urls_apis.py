@@ -24,10 +24,11 @@ urlpatterns = [
         apis.UserRetrieveUpdateDestroyView.as_view(),
         name='userinfo_update'
         ),
-    url(r'^(?P<pk>\d+)/edit/password/$',
-        apis.UserPasswordUpdateView1.as_view(),
-        name='edit_password'
-        ),
+    # url 삭제
+    # url(r'^(?P<pk>\d+)/edit/password/$',
+    #     apis.UserPasswordUpdateView1.as_view(),
+    #     name='edit_password'
+    #     ),
     url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
         apis.AccountActivationView.as_view(),
         name='activate'),
