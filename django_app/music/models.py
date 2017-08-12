@@ -297,6 +297,7 @@ class Playlist(models.Model):
         related_name='playlist_musics'
     )
 
+    @property
     def make_list_attribute_weather(self):
         """
             이 list의 대표 날씨를 뽑는다
