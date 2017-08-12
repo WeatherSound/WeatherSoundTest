@@ -11,7 +11,6 @@ from member.tokens import account_activation_token
 
 User = get_user_model()
 
-
 __all__ = (
     'UserListView',
     'UserSignupView',
