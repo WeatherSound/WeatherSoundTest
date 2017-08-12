@@ -37,58 +37,49 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         return Response(content, status=status.HTTP_200_OK)
 
     def put(self, request, *args, **kwargs):
-        print('1어디지?')
         user = User.objects.get(pk=kwargs['pk'])
-        print('2어디지?')
         serializer_class = UserRetrieveUpdateDestroySerializers
-        print('3어디지?')
         serializer = serializer_class(user, data=request.data, partial=True)
-        print('4어디지?')
-        serializer.is_valid(raise_exception=True)
-        print('5어디지?')
-        serializer.save()
-        print('6어디지?')
+        #serializer.is_valid(raise_exception=True)
 
-        update_info = serializer.save()
-        print('7어디지?')
-
-        print(update_info)
-        if request.data.get('password'):
-            print('비밀번호가 있다')
-            if user.check_password(request.data.get('password')):
-                print('비밀번호가 맞는지 체크한다')
-                user.set_password(request.data.get('new_password2'))
-                print(request.data.get('new_password2'))
-                print('비번체크 통과했으므로 비밀번호를 새로 설정한다')
-                update_info.nickname = request.data.get('nickname', update_info.nickname)
-                update_info.img_profile = request.data.get('img_profile', update_info.img_profile)
-                print(update_info)
-                update_info.save()
-                print('유저 저장')
-
-                print(update_info)
-                user_serializer = UserListSerializers(update_info, partial=True)
-
-                print(user_serializer.data)
-                content = {
-                    'detail': "회원정보가 변경되었습니다. 재로그인해주세요.",
-                    'userInfo': user_serializer.data,
-                }
-                return Response(content, status=status.HTTP_202_ACCEPTED)
-
-            else:
-                content = {
-                    "detail": "기존 비밀번호가 일치하지 않습니다.",
-                }
-                print('비번 안맞아서 400 에러 발생')
-                return Response(
-                    content,
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+        if request.data.get('password') == '':
+            print(111117)
+        elif request.data.get('password') is None:
+            print(22227)
         else:
-            update_info.nickname = request.data.get('nickname', update_info.nickname)
-            update_info.img_profile = request.data.get('img_profile', update_info.img_profile)
+            print(333333337)
+        if request.data.get('password') == '' or request.data.get('password') is None:
+            serializer.is_valid(raise_exception=True)
+            print(serializer)
+            print(serializer.validated_data)
+            update_info = serializer.save()
+            print('update_info:::: ', update_info)
+            print(1, update_info.nickname)
+
+            if request.data.get('nickname') == '':
+                print(112349233111)
+            elif request.data.get('nickname') is None:
+                print(2223243242)
+            else:
+                print(3333334234234333)
+            update_info.nickname = user.nickname if request.data.get(
+                'nickname') == '' or request.data.get('nickname') is None else request.data.get('nickname')
             update_info.save()
+            print(2, update_info.nickname)
+
+            if request.data.get('img_profile') == '':
+                print(11111111111111111111111)
+            elif request.data.get('img_profile') is None:
+                print(22222222222222222222222)
+            else:
+                print(3333333333333333333333)
+            update_info.img_profile = user.img_profile if request.data.get(
+                'img_profile') == '' or request.data.get('img_profile') is None else request.data.get('img_profile')
+            print(3, update_info.img_profile)
+            print(4, update_info.nickname)
+
+            update_info.save()
+            print('저장')
             user_serializer = UserListSerializers(update_info, partial=True)
             content = {
                 "datail": "회원정보가 변경되었습니다.",
@@ -98,6 +89,60 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
                 content,
                 status=status.HTTP_202_ACCEPTED
             )
+
+        else:
+            if request.data.get('password') == '':
+                print(11)
+            elif request.data.get('password') is None:
+                print(22)
+            else:
+                print(33)
+            print('비밀번호가 있다')
+            if request.data.get('password') is not None and user.check_password(request.data.get('password')):
+                print('비밀번호가 맞는지 체크한다')
+                user.set_password(request.data.get('new_password2'))
+                print(request.data.get('new_password2'))
+                print('비번체크 통과했으므로 비밀번호를 새로 설정한다')
+                serializer.is_valid(raise_exception=True)
+                update_info = serializer.save()
+
+                if request.data.get('nickname') == '':
+                    print(112349233111)
+                elif request.data.get('nickname') is None:
+                    print(2223243242)
+                else:
+                    print(3333334234234333)
+                update_info.nickname = user.nickname if request.data.get(
+                    'nickname') == '' or request.data.get('nickname') is None else request.data.get('nickname')
+                update_info.save()
+                print(2, update_info.nickname)
+
+                if request.data.get('img_profile') == '':
+                    print(11111111111111111111111)
+                elif request.data.get('img_profile') is None:
+                    print(22222222222222222222222)
+                else:
+                    print(3333333333333333333333)
+                update_info.img_profile = user.img_profile if request.data.get(
+                    'img_profile') == '' or request.data.get('img_profile') is None else request.data.get('img_profile')
+                print(user.password)
+                print('유저 저장')
+
+                user_serializer = UserListSerializers(update_info, partial=True)
+                content = {
+                    'detail': "회원정보가 변경되었습니다. 재로그인해주세요.",
+                    'userInfo': user_serializer.data,
+                }
+                return Response(content, status=status.HTTP_202_ACCEPTED)
+            else:
+                content = {
+                    "detail": "기존 비밀번호가 일치하지 않습니다.",
+                }
+                print('비번 안맞아서 400 에러 발생')
+                return Response(
+                    content,
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
     def delete(self, request, *args, **kwargs):
         content = {
