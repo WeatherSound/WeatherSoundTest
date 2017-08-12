@@ -6,7 +6,15 @@ urlpatterns = [
 
     url(r'^(?P<pk>\d+)/$',
         apis.UserRetrieveUpdateDestroyView.as_view(),
-        name='userdetail'
+        name='userinfo'
+        ),
+    url(r'^profile/(?P<pk>\d+)/$',
+        apis.UserRetrieveUpdateDestroyView.as_view(),
+        name='user_profile'
+        ),
+    url(r'^profile/(?P<pk>\d+)/edit/$',
+        apis.UserRetrieveUpdateDestroyView.as_view(),
+        name='userinfo_update'
         ),
     url(r'signup/$',
         apis.UserSignupView.as_view(),
@@ -19,14 +27,6 @@ urlpatterns = [
     url(r'^logout/$',
         apis.UserLogoutView.as_view(),
         name='logout'
-        ),
-    url(r'^(?P<pk>\d+)/edit/$',
-        apis.UserRetrieveUpdateDestroyView.as_view(),
-        name='userinfo_update'
-        ),
-    url(r'^(?P<pk>\d+)/edit/password/$',
-        apis.UserPasswordUpdateView1.as_view(),
-        name='edit_password'
         ),
     url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
         apis.AccountActivationView.as_view(),

@@ -32,25 +32,20 @@ class UserSignupSerializers(serializers.ModelSerializer):
 
     def validate(self, data):
         username = data.get('username')
-        nickname = data.get('nickname')
         password1 = data.get('password1')
         password2 = data.get('password2')
 
         if User.objects.filter(username=username).exists():
-            raise serializers.ValidationError(
-                _('Email account already exists.')
+            return serializers.ValidationError(
+                "존재하는 이메일 계정입니다."
             )
         elif validate_email(username):
             raise serializers.ValidationError(
-                _('Please enter a proper email account.')
-            )
-        elif User.objects.filter(nickname=nickname).exists():
-            raise serializers.ValidationError(
-                _('Nickname already exists.')
+                "이메일 양식이 올바르지 않습니다."
             )
         elif password1 != password2:
             raise serializers.ValidationError(
-                _('Password did not match.')
+                "입력하신 비밀번호와 확인용 비밀번호가 일치하지 않습니다."
             )
         return data
 

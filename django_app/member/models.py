@@ -48,7 +48,7 @@ class MyUserManager(BaseUserManager):
             user.save()
             return user
         except ValidationError:
-            raise ValidationError('이메일 양식이 올바르지 않습니다.')
+            raise ValidationError("이메일 양식이 올바르지 않습니다.")
 
 
 class FacebookUserManager(DjangoUserManager):
@@ -70,14 +70,13 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
         (USER_TYPE_FACEBOOK, 'Facebook'),
     )
     user_type = models.CharField(
-        max_length=1,
+        max_length=10,
         choices=CHOICES_USER_TYPE,
         default=USER_TYPE_DJANGO
     )
     username = models.CharField(
         _('email address'),
         max_length=100,
-
         unique=True,
         null=True,
     )
@@ -134,11 +133,10 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
         return auth_models._user_has_perm(self, perm, obj)
 
     def get_full_name(self):
-        return self.nickname if self.nickname else self.username
+        return self.username
 
     def get_short_name(self):
-        return self.nickname if self.nickname else self.username
-
+        return self.username
 
 User = get_user_model()
 
