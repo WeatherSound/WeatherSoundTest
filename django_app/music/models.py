@@ -160,9 +160,6 @@ class MusicManager(models.Manager):
 
         )
 
-        # pl[0].playlist_musics.aggregate(sunny_count=Sum("sunny"), foggy_sum=Sum("foggy"), rainy_sum=Sum("rainy"),
-        #                                 cloudy_sum=Sum("cloudy"), snowy_sum=Sum("snowy"))
-
 
 # 전체 음악파일/정보 모델
 class Music(models.Model):
@@ -260,10 +257,24 @@ class Weather(models.Model):
 
 
 class PlaylistManager(models.Manager):
-    def create_main_list(self, name_playlist):
+    def make_weather_recommand_list(self, **kwargs):
+        play_lists = self.filter(user_id=1)
+        # TODO 이중반복문 고치자
+        for play_list in play_lists:
+            musics = Music.objects.all().order_by("-" + play_list.weather)[:20]
+            play_list.add_musics(musics=musics)
+
+    def create_main_list(self, ):
         admin = User.objects.get(pk=1)  # filter is_superuser true?
-        self.create(user=admin, name_platlist=name_playlist)
-        return self
+
+        sunny, _ = self.get_or_create(user=admin, name_playlist="sunny", weather="sunny")
+        foggy, _ = self.get_or_create(user=admin, name_playlist="foggy", weather="foggy")
+        rainy, _ = self.get_or_create(user=admin, name_playlist="rainy", weather="rainy")
+        cloudy, _ = self.get_or_create(user=admin, name_playlist="cloudy", weather="cloudy")
+        snowy, _ = self.get_or_create(user=admin, name_playlist="snowy", weather="snowy")
+        self.make_weather_recommand_list()
+
+        return sunny, foggy, rainy, cloudy, snowy
 
 
 # 유저별 플레이리스트 모델
@@ -304,7 +315,7 @@ class Playlist(models.Model):
         return max(results, key=lambda i: results[i])
 
     def add_music(self, music):
-        # TODO 아마 사용은 주소로 들어올테니 music 객체르 ㄹ찾도록 추후 수정
+        # TODO 아마 사용은 주소로 들어올테니 music 객체를 찾도록 추후 수정
         """
             음악을 리스트에 추가하고 weather필드에 날씨 업데이트
         :param music: 리스트에 들어갈 음악
@@ -316,13 +327,22 @@ class Playlist(models.Model):
         self.save()
         return self
 
-    def __str__(self):
-        return '{}의 {}'.format(
-            self.user,
-            self.name_playlist)
+    def add_musics(self, musics):
+        for music in musics:
+            self.playlistmusics_set.create(music=music)
+        self.weather = self.make_list_attribute_weather()
+        music.add_weather(self.weather)
+        self.save()
+
+        return self
 
 
-# 유저의 플레이리스트 내 음악 목록 모델
+def __str__(self):
+    return '{}의 {}'.format(
+        self.user,
+        self.name_playlist)  # 유저의 플레이리스트 내 음악 목록 모델
+
+
 class PlaylistMusics(models.Model):
     name_playlist = models.ForeignKey(
         'Playlist',
