@@ -7,18 +7,10 @@ User = get_user_model()
 
 __all__ = (
     'UserSignupSerializers',
-
 )
 
 
-class UserSignupSerializers(serializers.Serializer):
-    email = serializers.CharField(
-        max_length=50
-    )
-    nickname = serializers.CharField(
-        label="nickname",
-        max_length=50
-    )
+class UserSignupSerializers(serializers.ModelSerializer):
     password1 = serializers.CharField(
         write_only=True,
         style={'input_type': 'password'}
@@ -27,41 +19,42 @@ class UserSignupSerializers(serializers.Serializer):
         write_only=True,
         style={'input_type': 'password'}
     )
+
     class Meta:
-        order_by = ('pk',)
+        model = User
+        fields = (
+            'username',
+            'nickname',
+            'img_profile',
+            'password1',
+            'password2',
+        )
 
-    def validate_emailfield(self, email):
-        if User.objects.filter(email=email).exists():
-            raise serializers.ValidationError(
-                _('Email already exists.')
-            )
-        elif validate_email(email):
-            raise serializers.ValidationError(
-                _('Please enter a proper email account.')
-            )
-        return email
+    def validate(self, data):
+        username = data.get('username')
+        password1 = data.get('password1')
+        password2 = data.get('password2')
 
-    def validate_nickname(self, nickname):
-        if User.objects.filter(username=nickname).exists():
-            raise serializers.ValidationError(
-                _('Nickname already exists.')
+        if User.objects.filter(username=username).exists():
+            return serializers.ValidationError(
+                "존재하는 이메일 계정입니다."
             )
-        return nickname
-
-    def validate(self, attrs):
-        password1 = attrs.get('password1')
-        password2 = attrs.get('password2')
-        if password1 != password2:
+        elif validate_email(username):
             raise serializers.ValidationError(
-                _('Password did not match.')
+                "이메일 양식이 올바르지 않습니다."
             )
-        return attrs
+        elif password1 != password2:
+            raise serializers.ValidationError(
+                "입력하신 비밀번호와 확인용 비밀번호가 일치하지 않습니다."
+            )
+        return data
 
     def save(self):
         user = User.objects.create_user(
-            email=self.validated_data.get('email'),
-            username=self.validated_data.get('nickname'),
-            password=self.validated_data.get('password1'),
+            username=self.validated_data.get('username'),
+            nickname=self.validated_data.get('nickname'),
+            password=self.validated_data.get('password2'),
+            img_profile=self.validated_data.get('img_profile'),
             # TODO 계정활성화 메일 보낼 시 is_active는 False로 돌릴 것.
         )
         return user

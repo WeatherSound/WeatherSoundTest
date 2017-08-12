@@ -50,10 +50,37 @@ EMAIL_PORT = 587
 AUTH_USER_MODEL = 'member.MyUser'
 
 # DJANGO CORS_HEAD
+# CORS_ALLOW_CREDENTIALS = False
+CORS_ALLOW_CREDENTIALS = True
+# 모든 input 허용 -> 없에도 될듯
 CORS_ORIGIN_ALLOW_ALL = True
+# 이 리스트만 허용
 CORS_ORIGIN_WHITELIST = (
     'localhost:8080',
     'localhost:8000',
+    "weather-sound.com",
+    "weathersoundtest2-dev.ap-northeast-2.elasticbeanstalk.com",
+)
+# 허용되는 메소드
+CORS_ALLOW_METHODS = (
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+)
+# 허용되는 헤더들 -> http문제도 여기서 해결은 가능
+CORS_ALLOW_HEADERS = (
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
 )
 
 # Application definition
@@ -71,6 +98,7 @@ INSTALLED_APPS = [
     'music',
     'rest_framework',
     'rest_framework.authtoken',
+    'corsheaders',
     'utils',
 
     # "django_extensions",

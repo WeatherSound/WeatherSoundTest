@@ -1,77 +1,73 @@
 from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
-from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
 User = get_user_model()
 
 __all__ = (
-    'UserListSerializers',
-    'UserRetrieveUpdateDestroySerializers',
-    'UserPasswordUpdateSerializers',
+    'UserListSerializers1',
+    'UserRetrieveUpdateDestroySerializers1',
+    'UserPasswordUpdateSerializers1',
 )
 
 
-class UserListSerializers(serializers.ModelSerializer):
+class UserListSerializers1(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
             'pk',
-            'email',
             'username',
+            'nickname',
             'img_profile',
             'password',
             'is_active',
             'is_admin',
         )
         read_only = (
-            'email',
+            'username',
         )
         write_only = (
             'password',
         )
 
 
-class UserRetrieveUpdateDestroySerializers(serializers.ModelSerializer):
+class UserRetrieveUpdateDestroySerializers1(serializers.ModelSerializer):
+    """
+    유저 정보(이메일 / 유저명 / 프로필이미지) 변경
+    """
+
     class Meta:
         model = User
         fields = (
-            'pk',
-            'email',
             'username',
+            'nickname',
             'img_profile',
         )
         read_only = (
-            'email',
+            'username',
         )
-
-    def validate(self, attrs):
-        pk = attrs.get('pk')
-        if not pk:
-            raise serializers.ValidationError(
-                _('User doesn\'t exist')
-            )
-        return attrs
 
     def update(self, instance, validated_data):
         # get 예외처리?
-        instance.email = validated_data.get(
-            'email',
-            instance.email,
-        )
         instance.username = validated_data.get(
             'username',
-            instance.username
+            instance.username,
+        )
+        instance.nickname = validated_data.get(
+            'nickname',
+            instance.nickname
         )
         instance.img_profile = validated_data.get(
             'img_profile',
             instance.img_profile
-        )
+        ).split("?")[0]
         instance.save()
         return instance
 
 
-class UserPasswordUpdateSerializers(serializers.ModelSerializer):
+class UserPasswordUpdateSerializers1(serializers.ModelSerializer):
+    """
+    유저 비밀번호 변경 시리얼라이저
+    """
     password = serializers.CharField(
         label='password verify',
         max_length=50,
@@ -99,30 +95,12 @@ class UserPasswordUpdateSerializers(serializers.ModelSerializer):
             'new_password2',
         )
 
-    # def validate_password(self, password):
-    #     if password:
-    #         user = User.objects.filter(email=email)
-    #         if password == user.password:
-    #             return force_text(password)
-    #     else:
-    #         raise serializers.ValidationError(
-    #             _("Enter the current password.")
-    #         )
-
     def validate(self, attrs):
         password = attrs.get('password')
-        print(password)
         new_password1 = attrs.get('new_password1')
-        print(new_password1)
         new_password2 = attrs.get('new_password2')
-        print(new_password2)
         if password:
-            user = get_object_or_404(User, pk=self.pk)
-            if not user.check_password(password):
-                return serializers.ValidationError(
-                    "기존 비밀번호를 정확히 입력해주세요."
-                )
-            elif not (new_password1 and new_password2):
+            if not (password and new_password1 and new_password2):
                 return serializers.ValidationError(
                     "필수 입력칸입니다."
                 )
