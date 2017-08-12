@@ -63,7 +63,15 @@ def add_mp3_and_album_image_in_database():
 
                         with open(img_address + "/{}.jpg".format(img_name), "wb") as ff:  # 추후 image저장위치 지정 다시
                             ff.write(img)
-                    lyrics = audio.tag.lyrics[0].text if len(audio.tag.lyrics[0]) else "가사정보가 없습니다."
+                    try:
+                        lyrics = audio.tag.lyrics[0].text
+                    except IndexError:
+                        lyrics = "가사정보가 없습니다."
+
+                    point = []
+                    while sum(point) == 0:
+                        point = [randint(0, 9) for x in range(5)]
+
                     m = Music.objects.create(
                         source_music="{}/{}".format(addr_music, hashed_name),
                         name_music=audio.tag.title,
@@ -74,11 +82,11 @@ def add_mp3_and_album_image_in_database():
                         lyrics=lyrics,
 
                         # TODO 더미용 날씨 데이터
-                        sunny=randint(0, 9),
-                        foggy=randint(0, 9),
-                        rainy=randint(0, 9),
-                        cloudy=randint(0, 9),
-                        snowy=randint(0, 9),
+                        sunny=point[0],
+                        foggy=point[1],
+                        rainy=point[2],
+                        cloudy=point[3],
+                        snowy=point[4],
 
                     )
                     print(11111111, path)
