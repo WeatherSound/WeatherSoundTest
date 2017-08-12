@@ -259,7 +259,6 @@ class Weather(models.Model):
 class PlaylistManager(models.Manager):
     def make_weather_recommand_list(self, **kwargs):
         play_lists = self.filter(user_id=1)
-        # TODO 이중반복문 고치자
         for play_list in play_lists:
             musics = Music.objects.all().order_by("-" + play_list.weather)[:20]
             play_list.add_musics(musics=musics)
@@ -336,11 +335,10 @@ class Playlist(models.Model):
 
         return self
 
-
-def __str__(self):
-    return '{}의 {}'.format(
-        self.user,
-        self.name_playlist)  # 유저의 플레이리스트 내 음악 목록 모델
+    def __str__(self):
+        return '{}의 {}'.format(
+            self.user,
+            self.name_playlist)  # 유저의 플레이리스트 내 음악 목록 모델
 
 
 class PlaylistMusics(models.Model):
