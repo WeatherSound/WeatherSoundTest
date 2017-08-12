@@ -88,9 +88,9 @@ class UserRetrieveUpdateDestroySerializers(serializers.ModelSerializer):
                 'nickname',
                 instance.nickname
             )
-            instance.img_profile = validated_data.get(
-                'img_profile',
-                instance.img_profile
-            )
+            # instance.img_profile = validated_data.get(
+            #     'img_profile',
+            #     instance.img_profile
+            # )
         instance.save()
         return instance

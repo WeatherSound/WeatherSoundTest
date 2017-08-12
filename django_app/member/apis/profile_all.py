@@ -21,7 +21,7 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserRetrieveUpdateDestroySerializers
     permission_classes = (
-        permissions.IsAuthenticatedOrReadOnly,
+        permissions.IsAuthenticated,
         ObjectIsRequestUser,
     )
 
@@ -36,14 +36,22 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         }
         return Response(content, status=status.HTTP_200_OK)
 
-    def patch(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
+        print('1어디지?')
         user = User.objects.get(pk=kwargs['pk'])
+        print('2어디지?')
         serializer_class = UserRetrieveUpdateDestroySerializers
+        print('3어디지?')
         serializer = serializer_class(user, data=request.data, partial=True)
+        print('4어디지?')
         serializer.is_valid(raise_exception=True)
+        print('5어디지?')
         serializer.save()
+        print('6어디지?')
 
         update_info = serializer.save()
+        print('7어디지?')
+
         print(update_info)
         if request.data.get('password'):
             print('비밀번호가 있다')
@@ -58,6 +66,7 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
                 update_info.save()
                 print('유저 저장')
 
+                print(update_info)
                 user_serializer = UserListSerializers(update_info, partial=True)
 
                 print(user_serializer.data)
