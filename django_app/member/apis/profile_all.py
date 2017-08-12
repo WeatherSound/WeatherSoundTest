@@ -26,14 +26,26 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         ObjectIsRequestUser,
     )
 
+    def get(self, request, *args, **kwargs):
+        user = User.objects.get(pk=kwargs['pk'])
+        serializer_class = UserListSerializers
+        serializer = serializer_class(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        content = {
+            'userInfo': serializer.data,
+        }
+        return Response(content, status=status.HTTP_200_OK)
+
     def patch(self, request, *args, **kwargs):
         user = User.objects.get(pk=kwargs['pk'])
         serializer_class = UserRetrieveUpdateDestroySerializers
         serializer = serializer_class(user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        update_info = serializer.save()
 
+        update_info = serializer.save()
+        print(update_info)
         if request.data.get('password'):
             print('비밀번호가 있다')
             if user.check_password(request.data.get('password')):
@@ -43,11 +55,14 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
                 print('비번체크 통과했으므로 비밀번호를 새로 설정한다')
                 update_info.nickname = request.data.get('nickname', update_info.img_profile)
                 update_info.img_profile = request.data.get('img_profile', update_info.img_profile)
+                print(update_info)
                 update_info.save()
                 print('유저 저장')
-                user_serializer = UserListSerializers(update_info)
+
+                user_serializer = UserListSerializers(update_info, partial=True)
                 # user_serializer.is_valid(raise_exception=True)
 
+                print(user_serializer.data)
                 content = {
                     'detail': "회원정보가 변경되었습니다. 재로그인해주세요.",
                     'userInfo': user_serializer.data,
@@ -67,7 +82,7 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
             update_info.nickname = request.data.get('nickname', update_info.img_profile)
             update_info.img_profile = request.data.get('img_profile', update_info.img_profile)
             update_info.save()
-            user_serializer = UserListSerializers(update_info)
+            user_serializer = UserListSerializers(update_info, partial=True)
             content = {
                 "datail": "회원정보가 변경되었습니다.",
                 "userInfo": user_serializer.data,
@@ -76,20 +91,6 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
                 content,
                 status=status.HTTP_202_ACCEPTED
             )
-            # serializer = self.serializer_class(user, data=request.data)
-            # print(555555555555555555555555555555)
-            # serializer.is_valid(raise_exception=True)
-            # serializer.save()
-            # user_serializer = UserListSerializers(user)
-            # user_serializer.is_valid(raise_exception=True)
-            # user_serializer.save()
-            # content = {
-            #     "detail": "회원정보가 변경되었습니다.",
-            #     "updateInfo": serializer.data,
-            #     "userInfo": user_serializer.data,
-            # }
-            # print('ended!!')
-            # return Response(content, status=status.HTTP_200_OK)
 
     def delete(self, request, *args, **kwargs):
         content = {
@@ -97,16 +98,3 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         }
         super().destroy(self, request, *args, **kwargs)
         return Response(content, status=status.HTTP_202_ACCEPTED)
-
-
-# class UserPasswordUpdateView(generics.RetrieveUpdateAPIView):
-#     """
-#     사용자 비밀번호 변경
-#     """
-#     queryset = User.objects.all()
-#     serializer_class = UserPasswordUpdateSerializers
-#     permission_classes = (
-#         permissions.IsAuthenticatedOrReadOnly,
-#         ObjectIsRequestUser,
-#     )
-

@@ -65,10 +65,11 @@ class UserRetrieveUpdateDestroySerializers(serializers.ModelSerializer):
         )
         read_only_fields = (
             'username',
-            'new_password1',
-            'new_password2',
         )
-
+        extra_kwargs = {
+            'new_password1': {'write_only': True},
+            'new_password2': {'write_only': True},
+        }
 
     def validate(self, data):
         if data.get('password'):
@@ -92,6 +93,16 @@ class UserRetrieveUpdateDestroySerializers(serializers.ModelSerializer):
                 'img_profile',
                 instance.img_profile
             )
-
+            # ### 코드 리펙토링 ###
+            # if validated_data['password']:
+            #     if instance.check_password(validated_data['password']):
+            #         instance.set_password(validated_data['new_password2'])
+            #         profile_data = validated_data.pop('new_password1', 'new_password2')
+            #
+            #     else:
+            #         raise serializers.ValidationError(
+            #             "기존 비밀번호가 일치하지 않습니다."
+            #         )
+            # ##################
         instance.save()
         return instance
