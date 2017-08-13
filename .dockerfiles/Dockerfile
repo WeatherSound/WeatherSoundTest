@@ -1,6 +1,8 @@
 FROM        eb_weathersound
 MAINTAINER  qufskan9396@gmail.com
 
+
+ENV         LANG C.UTF-8
 # 컨테이너 내 복사
 COPY        . /srv/weathersound
 # cd /srv/deploy_eb/docker 와 같음
@@ -27,6 +29,13 @@ RUN         ln -sf /etc/nginx/sites-available/nginx-app.conf /etc/nginx/sites-en
 
 # collectstatic 실행
 RUN         /root/.pyenv/versions/weathersound/bin/python /srv/weathersound/django_app/manage.py collectstatic --settings=config.settings.deploy --noinput
+
+# front프로젝트 복사
+WORKDIR     /srv
+RUN         git clone https://github.com/dlqjaen/WeatherSound.git front
+WORKDIR     /srv/front/weather_sound_project/
+RUN         npm install
+RUN         npm run build
 
 CMD         supervisord -n
 # 80포트와 8000포트를 열어줌
