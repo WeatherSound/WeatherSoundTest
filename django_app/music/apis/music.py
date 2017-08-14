@@ -1,16 +1,21 @@
+from django.contrib.auth import get_user_model
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from music.models import Music
+from music.models import Music, Playlist
 from music.permissions import IsOwnerOrReadOnly
-from music.serializers import MusicSerializer
+from music.serializers import MusicSerializer, UserPlaylistSerializer, PlaylistSerializer
 
 __all__ = (
     'MusicListCreateView',
     'MusicListView',
+    "PlaylistListCreateView",
+    "UserPlaylistListCreateView",
 
 )
+
+User = get_user_model()
 
 
 # APIView 사용
@@ -30,6 +35,28 @@ class MusicListCreateView(APIView):
 
     def post(self, request, *args, **kwargs):
         pass
+
+
+class PlaylistListCreateView(APIView):
+    def get(self, request, *args, **kwargs):
+        playlists = Playlist.objects.all()
+        serializer = PlaylistSerializer(playlists, many=True)
+        return Response(serializer.data)
+
+    pass
+
+
+class UserPlaylistListCreateView(APIView):
+    # post는 내 리스트 추가
+
+    # get은 자신의 리스트들,
+    def get(self, request, *args, **kwargs):
+        # TODO 유저별로 판단 가능하게!
+        users = User.objects.all()
+        serializer = UserPlaylistSerializer(users, many=True)
+        return Response(serializer.data)
+
+    pass
 
 
 # GenericView 사용
