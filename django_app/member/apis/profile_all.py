@@ -20,8 +20,8 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserRetrieveUpdateDestroySerializers
     permission_classes = (
-        permissions.IsAuthenticated,
         ObjectIsRequestUser,
+        permissions.IsAuthenticated,
     )
 
     def get(self, request, *args, **kwargs):
