@@ -32,7 +32,7 @@ RUN         /root/.pyenv/versions/weathersound/bin/python /srv/weathersound/djan
 
 # front프로젝트 복사
 WORKDIR     /srv
-RUN         git clone https://github.com/dlqjaen/WeatherSound.git front
+RUN         git clone -b beomdu https://github.com/dlqjaen/WeatherSound.git front
 WORKDIR     /srv/front/weather_sound_project/
 RUN         npm install
 RUN         npm run build
