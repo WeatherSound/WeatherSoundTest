@@ -1,8 +1,7 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth import update_session_auth_hash
 from rest_framework import generics, permissions, status
-from rest_framework.exceptions import ValidationError, APIException
 from rest_framework.response import Response
+
 from member.serializers.profile_all import UserListSerializers, \
     UserRetrieveUpdateDestroySerializers
 from permissions import ObjectIsRequestUser
@@ -40,43 +39,21 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         user = User.objects.get(pk=kwargs['pk'])
         serializer_class = UserRetrieveUpdateDestroySerializers
         serializer = serializer_class(user, data=request.data, partial=True)
-        #serializer.is_valid(raise_exception=True)
 
-        if request.data.get('password') == '':
-            print(111117)
-        elif request.data.get('password') is None:
-            print(22227)
-        else:
-            print(333333337)
+        # 비밀번호를 변경하지 않을 경우
         if request.data.get('password') == '' or request.data.get('password') is None:
             serializer.is_valid(raise_exception=True)
-            print(serializer)
-            print(serializer.validated_data)
             update_info = serializer.save()
-            print('update_info:::: ', update_info)
-            print(1, update_info.nickname)
 
-            if request.data.get('nickname') == '':
-                print(112349233111)
-            elif request.data.get('nickname') is None:
-                print(2223243242)
-            else:
-                print(3333334234234333)
+            # 닉네임 저장(수정하지 않으면 본래값)
             update_info.nickname = user.nickname if request.data.get(
                 'nickname') == '' or request.data.get('nickname') is None else request.data.get('nickname')
             update_info.save()
             print(2, update_info.nickname)
 
-            if request.data.get('img_profile') == '':
-                print(11111111111111111111111)
-            elif request.data.get('img_profile') is None:
-                print(22222222222222222222222)
-            else:
-                print(3333333333333333333333)
+            # 프로필 이미지 저장(수정하지 않으면 본래값)
             update_info.img_profile = user.img_profile if request.data.get(
                 'img_profile') == '' or request.data.get('img_profile') is None else request.data.get('img_profile')
-            print(3, update_info.img_profile)
-            print(4, update_info.nickname)
 
             update_info.save()
             print('저장')
@@ -91,38 +68,20 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
             )
 
         else:
-            if request.data.get('password') == '':
-                print(11)
-            elif request.data.get('password') is None:
-                print(22)
-            else:
-                print(33)
-            print('비밀번호가 있다')
+            # 비밀번호를 변경하는 경우
             if request.data.get('password') is not None and user.check_password(request.data.get('password')):
-                print('비밀번호가 맞는지 체크한다')
+                # 비밀번호가 맞는지 체크한다
                 user.set_password(request.data.get('new_password2'))
-                print(request.data.get('new_password2'))
-                print('비번체크 통과했으므로 비밀번호를 새로 설정한다')
+                # 비번체크 통과했으므로 비밀번호를 새로 설정한다
                 serializer.is_valid(raise_exception=True)
                 update_info = serializer.save()
 
-                if request.data.get('nickname') == '':
-                    print(112349233111)
-                elif request.data.get('nickname') is None:
-                    print(2223243242)
-                else:
-                    print(3333334234234333)
+                # 닉네임 저장
                 update_info.nickname = user.nickname if request.data.get(
                     'nickname') == '' or request.data.get('nickname') is None else request.data.get('nickname')
                 update_info.save()
-                print(2, update_info.nickname)
 
-                if request.data.get('img_profile') == '':
-                    print(11111111111111111111111)
-                elif request.data.get('img_profile') is None:
-                    print(22222222222222222222222)
-                else:
-                    print(3333333333333333333333)
+                # 프로필 이미지 저장
                 update_info.img_profile = user.img_profile if request.data.get(
                     'img_profile') == '' or request.data.get('img_profile') is None else request.data.get('img_profile')
                 print(user.password)
