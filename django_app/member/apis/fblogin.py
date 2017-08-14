@@ -49,7 +49,7 @@ class FacebookLoginAPIView(APIView):
 
         # 프론트로부터 전달받은 token을 Facebook의 debug_token API를 이용해
         # 검증한 결과를 debug_result에 할당
-        debug_result = self.debug_token(token)
+        self.debug_token(token)
         user_info = self.get_user_info(token=token)
 
         # 이미 존재하면 가져오고 없으면 페이스북 유저 생성

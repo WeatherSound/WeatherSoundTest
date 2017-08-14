@@ -71,7 +71,6 @@ class UserRetrieveUpdateDestroySerializers(serializers.ModelSerializer):
         }
 
     def validate(self, data):
-        print(99999999999999, data)
         password = data.get('password')
         print(password)
         # if not (data.get('new_password1') and data.get('new_password2')):
