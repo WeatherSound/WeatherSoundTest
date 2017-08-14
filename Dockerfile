@@ -30,6 +30,13 @@ RUN         ln -sf /etc/nginx/sites-available/nginx-app.conf /etc/nginx/sites-en
 # collectstatic 실행
 RUN         /root/.pyenv/versions/weathersound/bin/python /srv/weathersound/django_app/manage.py collectstatic --settings=config.settings.deploy --noinput
 
+# front프로젝트 복사
+WORKDIR     /srv
+RUN         git clone -b beomdu https://github.com/dlqjaen/WeatherSound.git front
+WORKDIR     /srv/front/weather_sound_project/
+RUN         npm install
+RUN         npm run build
+
 CMD         supervisord -n
 # 80포트와 8000포트를 열어줌
 EXPOSE      80 8000 8080
