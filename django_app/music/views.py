@@ -1,6 +1,4 @@
-from django.shortcuts import render
-from rest_framework import generics, permissions
-from rest_framework.compat import is_authenticated
+from rest_framework import generics
 
 from music.permissions import IsOwnerOrReadOnly
 from .models import Music
@@ -15,4 +13,3 @@ class MusicListView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         if self.request.user.is_staff:
             serializer.save(owner=self.request.user)
-

@@ -9,10 +9,11 @@ urlpatterns = [
         ),
     url(r"^playlist/$",
         apis.PlaylistListCreateView.as_view(),
-        
+
         ),
     url(r"^userplaylist/$",
         apis.UserPlaylistListCreateView.as_view(),
         name="playlist",
         ),
+    # url(r"^test/$", apis.PlaylistMusicsListCreateView.as_view(), name="test"),
 ]

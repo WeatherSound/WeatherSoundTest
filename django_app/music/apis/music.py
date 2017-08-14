@@ -5,13 +5,14 @@ from rest_framework.views import APIView
 
 from music.models import Music, Playlist
 from music.permissions import IsOwnerOrReadOnly
-from music.serializers import MusicSerializer, UserPlaylistSerializer, PlaylistSerializer
+from music.serializers import MusicSerializer, PlaylistSerializer, UserPlaylistSerializer
 
 __all__ = (
     'MusicListCreateView',
     'MusicListView',
     "PlaylistListCreateView",
     "UserPlaylistListCreateView",
+    # "PlaylistMusicsListCreateView",
 
 )
 
@@ -37,28 +38,6 @@ class MusicListCreateView(APIView):
         pass
 
 
-class PlaylistListCreateView(APIView):
-    def get(self, request, *args, **kwargs):
-        playlists = Playlist.objects.all()
-        serializer = PlaylistSerializer(playlists, many=True)
-        return Response(serializer.data)
-
-    pass
-
-
-class UserPlaylistListCreateView(APIView):
-    # post는 내 리스트 추가
-
-    # get은 자신의 리스트들,
-    def get(self, request, *args, **kwargs):
-        # TODO 유저별로 판단 가능하게!
-        users = User.objects.all()
-        serializer = UserPlaylistSerializer(users, many=True)
-        return Response(serializer.data)
-
-    pass
-
-
 # GenericView 사용
 # url 형식 :
 # {
@@ -76,3 +55,30 @@ class MusicListView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         if self.request.user.is_admin:
             serializer.save(owner=self.request.user)
+
+
+class PlaylistListCreateView(APIView):
+    def get(self, request, *args, **kwargs):
+        playlists = Playlist.objects.all()
+        # user = User.objects.all()
+        serializer = PlaylistSerializer(playlists, many=True)
+        return Response(serializer.data)
+
+
+class UserPlaylistListCreateView(APIView):
+    # post는 내 리스트 추가
+
+    # get은 자신의 리스트들,
+    def get(self, request, *args, **kwargs):
+        # TODO 유저별로 판단 가능하게!
+        users = User.objects.all()
+        serializer = UserPlaylistSerializer(users, many=True)
+        return Response(serializer.data)
+
+# class PlaylistMusicsListCreateView(APIView):
+#     def get(self, request, *args, **kwargs):
+#         plm = PlaylistMusics.objects.all()
+#         serializer = PlaylistMusicsSerializer(plm, many=True)
+#         return Response(serializer.data)
+#
+#     pass

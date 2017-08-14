@@ -281,6 +281,7 @@ class Playlist(models.Model):
     objects = PlaylistManager()
     user = models.ForeignKey(
         User,
+        related_name="playlists",
         on_delete=models.CASCADE
     )
     name_playlist = models.CharField(
@@ -348,6 +349,7 @@ class PlaylistMusics(models.Model):
         on_delete=models.CASCADE)
     music = models.ForeignKey(
         'Music',
+        related_name="musics",
         on_delete=models.CASCADE)
     date_added = models.DateTimeField(auto_now_add=True)
 
