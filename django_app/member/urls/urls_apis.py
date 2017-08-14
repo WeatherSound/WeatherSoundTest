@@ -26,6 +26,10 @@ urlpatterns = [
         apis.CustomAuthTokenView.as_view(),
         name='login'
         ),
+    url(r'^facebook-login/$',
+        apis.FacebookLoginAPIView.as_view(),
+        name='facebook_login'
+        ),
     url(r'^logout/$',
         apis.UserLogoutView.as_view(),
         name='logout'
