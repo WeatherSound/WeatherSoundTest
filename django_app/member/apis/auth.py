@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model, logout as django_logout, login as django_login, authenticate
 from django.core.exceptions import ObjectDoesNotExist
-from django.utils.translation import ugettext_lazy as _
 from rest_framework import status
 from rest_framework.authentication import BasicAuthentication, TokenAuthentication
 from rest_framework.authtoken.models import Token
@@ -14,7 +13,6 @@ User = get_user_model()
 
 __all__ = (
     'CustomAuthTokenView',
-    # 'CustomStatusView',
     'UserLogoutView',
 )
 
@@ -28,35 +26,6 @@ class CustomAuthTokenView(APIView):
     permission_classes = (AllowAny,)
     serializer_class = CustomAuthTokenSerializers
 
-    # def get(self, request, format=None):
-    #     serializer = self.serializer_class(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     user = serializer.validated_data['user']
-    #     user_serializer = UserRetrieveUpdateDestroySerializers
-    #     response_data = {}
-    #     response_data['UserInfo'] = user_serializer.data
-    #     if user.is_authenticated():
-    #         content = {
-    #             "detail": "로그인중입니다.",
-    #             "UserInfo": response_data.values()
-    #         }
-    #         return Response(content, status=status.HTTP_200_OK)
-    #     else:
-    #         content = {
-    #             "detail": "로그인하지 않았습니다."
-    #         }
-    #         return Response(content, status=status.HTTP_401_UNAUTHORIZED)
-
-    # def get(self, request, format=None):
-    #     content = {
-    #         'user': unicode(request.user),
-    #         'auth': unicode(request.auth),
-    #     }
-    #     return Response(
-    #         content,
-    #         status=status.HTTP_200_OK
-    #     )
-
     def post(self, request, format=None, *args, **kwargs):
         """
         serializer를 통과해 유효한 user의 토큰값을 생성(없을 경우) or 반환(있을 경우)
@@ -65,7 +34,7 @@ class CustomAuthTokenView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         if authenticate(
-                username=request.data.get('email'),
+                username=request.data.get('username'),
                 password=request.data.get('password')
         ):
             token, created = Token.objects.get_or_create(user=user)
@@ -89,29 +58,6 @@ class CustomAuthTokenView(APIView):
             )
 
 
-# class CustomStatusView(APIView):
-#     authentication_classes = (TokenAuthentication, BasicAuthentication)
-#     permission_classes = (AllowAny,)
-#     serializer_class = CustomAuthTokenSerializers
-#
-#     def post(self, request, format=None):
-#         serializer = self.serializer_class(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         user = serializer.validated_data['user']
-#         user_serializer = UserListSerializers
-#         if user.is_authenticated():
-#             content = {
-#                 "detail": "로그인중입니다.",
-#                 "userInfo": user_serializer.data
-#             }
-#             return Response(content, status=status.HTTP_200_OK)
-#         else:
-#             content = {
-#                 "detail": "로그인하지 않았습니다."
-#             }
-#             return Response(content, status=status.HTTP_401_UNAUTHORIZED)
-
-
 class UserLogoutView(APIView):
     """
     유저의 토큰을 삭제하여 로그아웃시킴
@@ -123,14 +69,14 @@ class UserLogoutView(APIView):
             request.user.auth_token.delete()
         except (ObjectDoesNotExist, AttributeError):
             content = {
-                "detail": _("No token given."),
+                "detail": "토큰이 없습니다.",
             }
             django_logout(request)
             return Response(content, status=status.HTTP_401_UNAUTHORIZED)
-        # TODO 삭제할 토큰이 없을 경우 그대로 로그아웃 진행시켜야하는가?
+        # TODO 삭제할 토큰이 없을 경우 그대로 로그아웃 진행시켜야하는가? 일단 동작하게 하려면 로그아웃 진행.
         django_logout(request)
         content = {
-            "detail": _("Successfully logged out."),
+            "detail": "로그아웃되었습니다.",
         }
         return Response(content, status=status.HTTP_200_OK)
 

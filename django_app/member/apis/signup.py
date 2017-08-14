@@ -11,7 +11,6 @@ from member.tokens import account_activation_token
 
 User = get_user_model()
 
-
 __all__ = (
     'UserListView',
     'UserSignupView',
@@ -64,6 +63,7 @@ class UserSignupView(generics.ListCreateAPIView):
         serializer = serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+
         # img_profile에 새로운 파일을 올릴 경우에는 기본 파일을
         # 사용자가 넣은 파일로 바꿔주고 저장.
         if request.data.get('img_profile'):
@@ -88,7 +88,7 @@ class UserSignupView(generics.ListCreateAPIView):
         # msg = 'Account activation email sent. Please check your email.'
         # super(UserListView, self).post(self, request, *args, **kwargs)
         content = {
-            'result': serializer.data,
+            # 'result': serializer.data,
             'userInfo': user_serializer.data,
             # TODO 이메일계정활성화 기능 구현 후 user 정보 자체를 반환하기
         }
@@ -114,7 +114,7 @@ class AccountActivationView(APIView):
             user.save()
             django_login(request, user)
             content = {
-                'user': user.email,
+                'user': user.username,
                 'result': 'Successfully activated the account. Enjoy!',
             }
             return Response(
