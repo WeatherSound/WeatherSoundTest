@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import generics, permissions, status
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 
 from member.serializers.profile_all import UserListSerializers, \
@@ -19,6 +20,9 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     """
     queryset = User.objects.all()
     serializer_class = UserRetrieveUpdateDestroySerializers
+    parser_classes = (
+        MultiPartParser,
+        FormParser,)  # add
     permission_classes = (
         permissions.IsAuthenticated,
         ObjectIsRequestUser,
