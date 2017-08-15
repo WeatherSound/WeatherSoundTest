@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import generics, permissions, status
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 
 from member.serializers.profile_all import UserListSerializers, \
@@ -19,6 +20,7 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     """
     queryset = User.objects.all()
     serializer_class = UserRetrieveUpdateDestroySerializers
+    parser_classes = (MultiPartParser, FormParser,) # add
     permission_classes = (
         permissions.IsAuthenticated,
         ObjectIsRequestUser,
@@ -39,6 +41,7 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         user = User.objects.get(pk=kwargs['pk'])
         serializer_class = UserRetrieveUpdateDestroySerializers
         serializer = serializer_class(user, data=request.data, partial=True)
+        parser_classes = (MultiPartParser, FormParser,)  # 추가
 
         # 비밀번호를 변경하지 않을 경우
         if request.data.get('password') == '' or request.data.get('password') is None:

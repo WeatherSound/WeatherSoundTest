@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from music.models import Music, Playlist, PlaylistMusics
+from music.models import Music, Playlist
 
 User = get_user_model()
 
@@ -9,15 +9,17 @@ __all__ = (
     "MusicSerializer",
     "PlaylistSerializer",
     "UserPlaylistSerializer",
+    "RetrieveUpdateDestroyAPIView",
 
 )
 
 
+# Music
 class MusicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Music
         fields = (
-            'id',
+            'pk',
             'img_music',
             'name_music',
             'name_artist',
@@ -26,6 +28,8 @@ class MusicSerializer(serializers.ModelSerializer):
         )
 
 
+# Playlist
+# playlst/
 class PlaylistSerializer(serializers.ModelSerializer):
     playlist_musics = MusicSerializer(many=True, read_only=True)
 
@@ -36,42 +40,43 @@ class PlaylistSerializer(serializers.ModelSerializer):
             "name_playlist",
             "weather",
             "playlist_musics"
-
         )
 
 
-class PlaylistMusicsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PlaylistMusics
-        fields = (
-            "name_playlist",
-            "music",
-        )
-
-    pass
-
-
+# userplaylist/
 class UserPlaylistSerializer(serializers.ModelSerializer):
-    playlists = PlaylistSerializer(many=True, read_only=True)
+    playlists = PlaylistSerializer(
+        many=True,
+        read_only=True)
+    name_playlist = serializers.CharField(
+        label='PlayList Name',
+        max_length=30,
+        allow_blank=True,
+        write_only=True,  # 주의
+    )
 
     class Meta:
         model = User
         fields = (
             "pk",
+            "username",  # email
+            "nickname",  # nickname
+            "playlists",
+            "name_playlist",
+        )
+        read_only_fields = (
             "username",
             "nickname",
             "playlists",
-            # "playlist_set",
-
         )
+        extra_kwargs = {
+            'name_playlist': {'write_only': True},
+        }
 
-# class PlaylistSerializer(serializers.ModelSerializer):
-#     # user = UserPlaylistSerializer()
-#
+# class PersonalListAddMusic(serializers.ModelSerializer):
 #     class Meta:
 #         model = Playlist
 #         fields = (
-#             "name_playlist",
-#             "weather",
-#             # "user",
+#
 #         )
+#     pass

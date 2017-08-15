@@ -15,5 +15,12 @@ urlpatterns = [
         apis.UserPlaylistListCreateView.as_view(),
         name="playlist",
         ),
+    url(r"^mainlist/$",
+        apis.MainPlaylistListView.as_view(),
+        name="mainlist"),
+    url(r"^personallist/(?P<pk>\d+)/$",
+        apis.PersonalMusiclistRetrieveUpdateDestroy.as_view(),
+        name="PersonalMuiscList"
+        )
     # url(r"^test/$", apis.PlaylistMusicsListCreateView.as_view(), name="test"),
 ]

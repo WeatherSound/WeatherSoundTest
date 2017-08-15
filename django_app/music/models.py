@@ -258,13 +258,31 @@ class Weather(models.Model):
 
 class PlaylistManager(models.Manager):
     def make_weather_recommand_list(self, **kwargs):
-        play_lists = self.filter(user_id=1)
+        """
+           추천리스트 생성, 1시간 단위
+        :return:
+        """
+        play_lists = self.filter(user_id=1)  # TODO 필터 조건을 좀더 정교하게
         for play_list in play_lists:
-            musics = Music.objects.all().order_by("-" + play_list.weather)[:20]
-            play_list.add_musics(musics=musics)
+            if not len(play_list.playlist_musics.all()):  # 모종의 사건으로 메인리스트 음악 유실시
+                musics = Music.objects.all().order_by("-" + play_list.weather)[:20]
+                play_list.playlist_musics.all().delete()
+                play_list.add_musics(musics=musics)
+                pass
+            if (timezone.now() - play_list.date_added).seconds >= 3600:  # 업데이트된지 시간이 1시간이 지났을시
+                musics = Music.objects.all().order_by("-" + play_list.weather)[:20]
+                play_list.playlist_musics.all().delete()
+                play_list.add_musics(musics=musics)
 
     def create_main_list(self, ):
+        """
+            최초 메인 추천리스트 생성
+        :return: 추천리스트 5개
+        """
         admin = User.objects.get(pk=1)  # filter is_superuser true?
+
+        if self.all() > 4:
+            return self.all()[:4]
 
         sunny, _ = self.get_or_create(user=admin, name_playlist="sunny", weather="sunny")
         foggy, _ = self.get_or_create(user=admin, name_playlist="foggy", weather="foggy")
@@ -298,6 +316,10 @@ class Playlist(models.Model):
         related_name='playlist_musics'
     )
 
+    # main list용
+    # 이 시간 마지막이 1시간이 넘으면 add
+    date_added = models.DateTimeField(auto_now=True)
+
     @property
     def make_list_attribute_weather(self):
         """
@@ -313,7 +335,10 @@ class Playlist(models.Model):
             snowy=Sum("snowy"),
 
         )
-        return max(results, key=lambda i: results[i])
+        try:
+            return max(results, key=lambda i: results[i])
+        except Exception as e:
+            return "빈 리스트"
 
     def add_music(self, music):
         # TODO 아마 사용은 주소로 들어올테니 music 객체를 찾도록 추후 수정
@@ -323,7 +348,7 @@ class Playlist(models.Model):
         :return:
         """
         self.playlistmusics_set.create(music=music)
-        self.weather = self.make_list_attribute_weather()
+        self.weather = self.make_list_attribute_weather
         music.add_weather(self.weather)
         self.save()
         return self
@@ -331,7 +356,7 @@ class Playlist(models.Model):
     def add_musics(self, musics):
         for music in musics:
             self.playlistmusics_set.create(music=music)
-        self.weather = self.make_list_attribute_weather()
+        self.weather = self.make_list_attribute_weather
         music.add_weather(self.weather)
         self.save()
 

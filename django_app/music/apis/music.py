@@ -1,17 +1,20 @@
 from django.contrib.auth import get_user_model
-from rest_framework import generics
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from music.models import Music, Playlist
 from music.permissions import IsOwnerOrReadOnly
 from music.serializers import MusicSerializer, PlaylistSerializer, UserPlaylistSerializer
+from permissions import ObjectIsRequestUser
 
 __all__ = (
     'MusicListCreateView',
     'MusicListView',
     "PlaylistListCreateView",
     "UserPlaylistListCreateView",
+    "MainPlaylistListView",
+    "PersonalMusiclistRetrieveUpdateDestroy",
     # "PlaylistMusicsListCreateView",
 
 )
@@ -57,6 +60,44 @@ class MusicListView(generics.ListCreateAPIView):
             serializer.save(owner=self.request.user)
 
 
+# main list
+class MainPlaylistListView(generics.ListAPIView):
+    queryset = Playlist.objects.filter(user=1)
+    serializer_class = PlaylistSerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = PlaylistSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+class PersonalMusiclistRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserPlaylistSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        ObjectIsRequestUser,
+    )
+
+    def get(self, request, *args, **kwargs):
+        user = User.objects.filter(pk=kwargs["pk"])
+        serializer_class = UserPlaylistSerializer
+        serializer = serializer_class(user, many=True)
+        return Response(serializer.data)
+
+    def put(self, request, *args, **kwargs):  # make peronal list
+        user = User.objects.filter(pk=kwargs["pk"])
+        serializer_class = UserPlaylistSerializer
+        serializer = serializer_class(user, many=True)
+        pl_name = request.data.get('name_playlist')
+        if pl_name:
+            pl = Playlist.objects.create(
+                user=user[0], name_playlist=pl_name)
+        serializer = serializer_class(user, many=True)
+        return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+
+
+# 전체 playlist
 class PlaylistListCreateView(APIView):
     def get(self, request, *args, **kwargs):
         playlists = Playlist.objects.all()
@@ -64,16 +105,20 @@ class PlaylistListCreateView(APIView):
         serializer = PlaylistSerializer(playlists, many=True)
         return Response(serializer.data)
 
+        # def post(self, request, *args, **kwargs):
+        #     pass
 
+
+# 개인이 소유한 플레이 리스트
 class UserPlaylistListCreateView(APIView):
-    # post는 내 리스트 추가
-
-    # get은 자신의 리스트들,
     def get(self, request, *args, **kwargs):
         # TODO 유저별로 판단 가능하게!
         users = User.objects.all()
         serializer = UserPlaylistSerializer(users, many=True)
         return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+        pass
 
 # class PlaylistMusicsListCreateView(APIView):
 #     def get(self, request, *args, **kwargs):
