@@ -47,11 +47,8 @@ class UserPasswordUpdateView1(generics.RetrieveUpdateAPIView):
     def patch(self, request, *args, **kwargs):
         user = User.objects.get(pk=kwargs['pk'])
         serializer = self.get_serializer(data=request.data)
-        print(1111111111111111111111111)
         if serializer.is_valid():
-            print(222222222222222222222222)
             serializer = self.get_serializer(data=request.data)
-            print(333333333333333333333333)
             user_serializer = UserListSerializers1(data=request.data)
             if not user.check_password(request.data.get('password')):
                 raise serializer.ValidationError(
@@ -62,12 +59,10 @@ class UserPasswordUpdateView1(generics.RetrieveUpdateAPIView):
 
             # make sure the user stays logged in
             update_session_auth_hash(request, request.user)
-            print(44444444444444444444444444)
             content = {
                 'detail': "비밀번호가 변경되었습니다.",
                 'userInfo': user_serializer.data,
             }
-            print(333333333333333333333333)
             return Response(content, status=status.HTTP_200_OK)
 
         content = {

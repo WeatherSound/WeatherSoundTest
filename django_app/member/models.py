@@ -32,7 +32,7 @@ class MyUserManager(BaseUserManager):
             user.save()
             return user
         except ValidationError:
-            raise ValidationError('이메일 양식이 올바르지 않습니다.')
+            raise ValidationError({"detail": "이메일 양식이 올바르지 않습니다."})
 
     def create_superuser(self, username, nickname, password=None, **extra_fields):
         try:
