@@ -72,21 +72,14 @@ class UserRetrieveUpdateDestroySerializers(serializers.ModelSerializer):
 
     def validate(self, data):
         password = data.get('password')
-        print(password)
-        # if not (data.get('new_password1') and data.get('new_password2')):
-        #     return serializers.ValidationError(
-        #         "필수 입력 필드입니다."
-        #     )
         if data.get('new_password1') == '' and data.get('new_password2') == '':
             data.pop('password')
             data.pop('new_password1')
             data.pop('new_password2')
-            print(111111111, data)
         elif data.get('new_password1') != data.get('new_password2'):
             return serializers.ValidationError(
                 "새로운 비밀번호와 확인용 비밀번호가 일치하지 않습니다."
             )
-        print(222222222, data)
         return data
 
     def update(self, instance, validated_data):
