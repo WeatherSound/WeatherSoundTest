@@ -24,8 +24,8 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         MultiPartParser,
         FormParser,)  # add
     permission_classes = (
-        permissions.IsAuthenticated,
         ObjectIsRequestUser,
+        permissions.IsAuthenticated,
     )
 
     def get(self, request, *args, **kwargs):

@@ -78,7 +78,7 @@ class UserLogoutView(APIView):
         content = {
             "detail": "로그아웃되었습니다.",
         }
-        return Response(content, status=status.HTTP_200_OK)
+        return Response(content, status=status.HTTP_202_ACCEPTED)
 
     def get(self, request):
         return self.logout(request)
