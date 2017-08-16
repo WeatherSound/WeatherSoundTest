@@ -290,7 +290,7 @@ class PlaylistManager(models.Manager):
         """
         admin = User.objects.get(pk=1)  # filter is_superuser true?
 
-        if len(self.all()) > 4:
+        if len(self.filter(user=admin)) > 4:
             return self.all()[:4]
 
         sunny, _ = self.get_or_create(user=admin, name_playlist="sunny", weather="sunny")

@@ -32,6 +32,12 @@ class MusicSerializer(serializers.ModelSerializer):
 # playlst/
 class PlaylistSerializer(serializers.ModelSerializer):
     playlist_musics = MusicSerializer(many=True, read_only=True)
+    name = serializers.CharField(
+        max_length=5,
+        allow_blank=True,
+        write_only=True,
+
+    )
 
     class Meta:
         model = Playlist
@@ -41,9 +47,12 @@ class PlaylistSerializer(serializers.ModelSerializer):
             "weather",
             "playlist_id",
             "playlist_musics",
+            "name",
         )
 
         read_only_fields = (
+            "name_playlist",
+            "playlist_id",
             "weather",
         )
 
