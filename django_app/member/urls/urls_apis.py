@@ -30,6 +30,10 @@ urlpatterns = [
         apis.FacebookLoginAPIView.as_view(),
         name='facebook_login'
         ),
+    url(r'^token-user-info/',
+        apis.TokenUserInfoAPIView.as_view(),
+        name='fb_user_token'
+        ),
     url(r'^logout/$',
         apis.UserLogoutView.as_view(),
         name='logout'

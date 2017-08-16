@@ -17,12 +17,13 @@ __all__ = (
 
 
 class MyUserManager(BaseUserManager):
-    def create_user(self, username, nickname, password=None, **extra_fields):
+    def create_user(self, user_type, username, nickname, email=None, password=None, **extra_fields):
         try:
-            validate_email(username)
             user = self.model(
                 username=self.normalize_email(username),
                 nickname=nickname,
+                user_type=user_type,
+                email=email if email else ''
             )
             extra_fields.setdefault('is_staff', False)
             extra_fields.setdefault('is_superuser', False)
@@ -36,8 +37,8 @@ class MyUserManager(BaseUserManager):
 
     def create_superuser(self, username, nickname, password=None, **extra_fields):
         try:
-            validate_email(username)
             user = self.create_user(
+                user_type=User.USER_TYPE_DJANGO,
                 username=username,
                 nickname=nickname,
                 password=password,
@@ -50,15 +51,17 @@ class MyUserManager(BaseUserManager):
         except ValidationError:
             raise ValidationError("이메일 양식이 올바르지 않습니다.")
 
-
-class FacebookUserManager(DjangoUserManager):
+#
+# class FacebookUserManager(DjangoUserManager):
     def create_facebook_user(self, user_info):
-        return self.create_user(
+        fb_user = self.create_user(
+            user_type=User.USER_TYPE_FACEBOOK,
             username=user_info['id'],
-            first_name=user_info['first_name', ''],
-            last_name=user_info['last_name', ''],
-            user_types=User.USER_TYPE_FACEBOOK
+            nickname=user_info['first_name'] + user_info['last_name'],
+            email='',
         )
+        fb_user.save()
+        return fb_user
 
 
 # 사용자 정보 모델
@@ -91,6 +94,12 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
         blank=True,
         default='member/basic_profile.png'
     )
+    email = models.EmailField(
+        default='',
+        null=True,
+        blank=True,
+    )
+    is_staff = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(
         _('active'),
@@ -101,7 +110,7 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     objects = MyUserManager()
 
     # Facebook user 생성용 매니저
-    objects_fb = FacebookUserManager()
+    # objects_fb = FacebookUserManager()
 
     EMAIL_FIELD = 'username'
     USERNAME_FIELD = 'username'

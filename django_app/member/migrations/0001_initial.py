@@ -38,7 +38,7 @@ class Migration(migrations.Migration):
             },
             managers=[
                 ('objects', django.db.models.manager.Manager()),
-                ('objects_fb', member.models.FacebookUserManager()),
+                # ('objects_fb', member.models.FacebookUserManager()),
             ],
         ),
     ]

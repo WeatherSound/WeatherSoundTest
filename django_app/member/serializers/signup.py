@@ -25,9 +25,13 @@ class UserSignupSerializers(serializers.ModelSerializer):
         fields = (
             'username',
             'nickname',
+            'email',
             'img_profile',
             'password1',
             'password2',
+        )
+        read_only_field = (
+            'email',
         )
 
     def validate(self, data):
@@ -53,6 +57,7 @@ class UserSignupSerializers(serializers.ModelSerializer):
         user = User.objects.create_user(
             username=self.validated_data.get('username'),
             nickname=self.validated_data.get('nickname'),
+            email=self.validated_data.get('email', ''),
             password=self.validated_data.get('password2'),
             img_profile=self.validated_data.get('img_profile'),
             # TODO 계정활성화 메일 보낼 시 is_active는 False로 돌릴 것.
