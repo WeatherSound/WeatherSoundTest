@@ -39,7 +39,12 @@ class PlaylistSerializer(serializers.ModelSerializer):
             "pk",
             "name_playlist",
             "weather",
-            "playlist_musics"
+            "playlist_id",
+            "playlist_musics",
+        )
+
+        read_only_fields = (
+            "weather",
         )
 
 

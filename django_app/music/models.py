@@ -259,6 +259,14 @@ class Weather(models.Model):
 
 
 class PlaylistManager(models.Manager):
+    def make_playlist_id(self):
+        users = User.objects.all()
+        for user in users:
+            playlists = Playlist.objects.filter(user=user).order_by("pk")
+            for i, playlist in enumerate(playlists):
+                playlist.playlist_id = i + 1
+                playlist.save()
+
     def make_weather_recommand_list(self, **kwargs):
         """
            추천리스트 생성, 1시간 단위
@@ -286,10 +294,15 @@ class PlaylistManager(models.Manager):
             return self.all()[:4]
 
         sunny, _ = self.get_or_create(user=admin, name_playlist="sunny", weather="sunny")
+        sunny.make_id()
         foggy, _ = self.get_or_create(user=admin, name_playlist="foggy", weather="foggy")
+        foggy.make_id()
         rainy, _ = self.get_or_create(user=admin, name_playlist="rainy", weather="rainy")
+        rainy.make_id()
         cloudy, _ = self.get_or_create(user=admin, name_playlist="cloudy", weather="cloudy")
+        cloudy.make_id()
         snowy, _ = self.get_or_create(user=admin, name_playlist="snowy", weather="snowy")
+        snowy.make_id()
         self.make_weather_recommand_list()
 
         return sunny, foggy, rainy, cloudy, snowy
@@ -314,15 +327,23 @@ class Playlist(models.Model):
     playlist_musics = models.ManyToManyField(
         'Music',
         through='PlaylistMusics',
-        related_name='playlist_musics'
+        related_name='playlist_musics',
     )
-
+    playlist_id = models.PositiveSmallIntegerField(
+        default=0,
+    )
     # main list용
     # 이 시간 마지막이 1시간이 넘으면 add
     date_added = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ("user", "name_playlist")
+
+    # TODO 임시방편 manager에 넣는게 좋을듯, filter시 id최대값 +1로 변경
+    def make_id(self):
+        self.playlist_id = len(Playlist.objects.filter(user=self.user))
+        self.save()
+        return self.playlist_id
 
     @property
     def make_list_attribute_weather(self):
