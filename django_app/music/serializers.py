@@ -55,6 +55,12 @@ class UserPlaylistSerializer(serializers.ModelSerializer):
         allow_blank=True,
         write_only=True,  # 주의
     )
+    music_added = serializers.CharField(
+        label="Music",
+        max_length=4,
+        allow_blank=True,
+        write_only=True,
+    )
 
     class Meta:
         model = User
@@ -64,6 +70,7 @@ class UserPlaylistSerializer(serializers.ModelSerializer):
             "nickname",  # nickname
             "playlists",
             "name_playlist",
+            "music_added",
         )
         read_only_fields = (
             "username",

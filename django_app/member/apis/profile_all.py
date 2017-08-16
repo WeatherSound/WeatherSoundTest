@@ -20,7 +20,7 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     """
     queryset = User.objects.all()
     serializer_class = UserRetrieveUpdateDestroySerializers
-    parser_classes = (MultiPartParser, FormParser,) # add
+    parser_classes = (MultiPartParser, FormParser,)  # add
     permission_classes = (
         permissions.IsAuthenticated,
         ObjectIsRequestUser,

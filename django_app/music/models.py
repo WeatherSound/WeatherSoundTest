@@ -282,7 +282,7 @@ class PlaylistManager(models.Manager):
         """
         admin = User.objects.get(pk=1)  # filter is_superuser true?
 
-        if self.all() > 4:
+        if len(self.all()) > 4:
             return self.all()[:4]
 
         sunny, _ = self.get_or_create(user=admin, name_playlist="sunny", weather="sunny")
@@ -322,9 +322,7 @@ class Playlist(models.Model):
     date_added = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = (
-            ("user", "name_playlist"),
-        )
+        unique_together = ("user", "name_playlist")
 
     @property
     def make_list_attribute_weather(self):

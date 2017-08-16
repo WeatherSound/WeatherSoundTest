@@ -85,14 +85,20 @@ class PersonalMusiclistRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIVi
         serializer = serializer_class(user, many=True)
         return Response(serializer.data)
 
+    # TODO 리스트 내에 음악 중복처리
     def put(self, request, *args, **kwargs):  # make peronal list
         user = User.objects.filter(pk=kwargs["pk"])
+        music_pk = request.data.get("music_added", None)
         serializer_class = UserPlaylistSerializer
         serializer = serializer_class(user, many=True)
         pl_name = request.data.get('name_playlist')
         if pl_name:
-            pl = Playlist.objects.create(
-                user=user[0], name_playlist=pl_name)
+            pl, pl_created = Playlist.objects.get_or_create(user=user[0],
+                                                            name_playlist=pl_name)
+            if music_pk:
+                music = Music.objects.get(pk=music_pk)
+                pl.playlistmusics_set.create(music=music)
+
         serializer = serializer_class(user, many=True)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
