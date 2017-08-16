@@ -45,7 +45,7 @@ class FacebookLoginAPIView(APIView):
     def post(self, request):
         token = request.data.get('token')
         if not token:
-            raise APIException('액세스 토큰이 필요합니다.')
+            raise APIException({"detail": "액세스 토큰이 필요합니다."})
 
         # 프론트로부터 전달받은 token을 Facebook의 debug_token API를 이용해
         # 검증한 결과를 debug_result에 할당
@@ -54,19 +54,17 @@ class FacebookLoginAPIView(APIView):
 
         # 이미 존재하면 가져오고 없으면 페이스북 유저 생성
         if User.objects.filter(username=user_info['id']).exists():
-            user = User.objects.get(username=user_info['id'])
+            fb_user = User.objects.get(username=user_info['id'])
         else:
-            user = User.objects.create_facebook_user(user_info)
+            fb_user = User.objects.create_facebook_user(user_info)
 
         # DRF 토큰을 생성
-        token, token_created = Token.objects.get_or_create(user=user)
-        user_serializer = UserListSerializers(user)
+        token, token_created = Token.objects.get_or_create(user=fb_user)
+        user_serializer = UserListSerializers(fb_user)
         # 관련정보를 한번에 리턴
         content = {
             'token': token.key,
             'userInfo': user_serializer.data,
-            # 시리얼라이저를 거쳐서 출력하도록
-            # 'user': UserSerializer(user).data,
         }
         return Response(content, status=status.HTTP_202_ACCEPTED)
 
@@ -85,11 +83,11 @@ class FacebookLoginAPIView(APIView):
         response = requests.get(url_debug_token, url_debug_token_params)
         result = response.json()
         if 'error' in result['data'] or 'error' in result:
-            raise APIException('토큰이 유효하지 않습니다.')
+            raise APIException({"detail": "토큰이 유효하지 않습니다."})
         else:
             return result
 
-    def get_user_info(user_id, token):
+    def get_user_info(self, token):
         url_user_info = 'https://graph.facebook.com/v2.9/me'
         url_user_info_params = {
             'access_token': token,
@@ -98,6 +96,7 @@ class FacebookLoginAPIView(APIView):
             'fields': ','.join([
                 'id',
                 'name',
+                'email',
                 'first_name',
                 'last_name',
                 'picture.type(large)',

@@ -93,6 +93,6 @@ class UserRetrieveUpdateDestroySerializers(serializers.ModelSerializer):
         #     'img_profile',
         #     instance.img_profile
         # )
-        print('instance.img_profile;;;;', instance.nickname)
+        print('instance.img_profile;;;;', instance.img_profile)
         instance.save()
         return instance
