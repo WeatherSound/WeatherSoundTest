@@ -101,6 +101,7 @@ class WeatherManager(models.Manager):
                                                   SECRET_KEY=settings.GOOGLE_API_KEY,
                                                   result_type="sublocality", )
 
+        # TODO 날씨 구단위로
         return requests.get(url).json()["results"][2]["formatted_address"]
 
     def _get_weather_info(self, latitude, longitude):
@@ -224,6 +225,7 @@ class Music(models.Model):
             self.snowy += 1
         else:
             print("Wrong weather")
+        self.save()
 
     def __str__(self):
         return self.name_music
@@ -268,7 +270,6 @@ class PlaylistManager(models.Manager):
                 musics = Music.objects.all().order_by("-" + play_list.weather)[:20]
                 play_list.playlist_musics.all().delete()
                 play_list.add_musics(musics=musics)
-                pass
             if (timezone.now() - play_list.date_added).seconds >= 3600:  # 업데이트된지 시간이 1시간이 지났을시
                 musics = Music.objects.all().order_by("-" + play_list.weather)[:20]
                 play_list.playlist_musics.all().delete()
@@ -319,6 +320,11 @@ class Playlist(models.Model):
     # main list용
     # 이 시간 마지막이 1시간이 넘으면 add
     date_added = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = (
+            ("user", "name_playlist"),
+        )
 
     @property
     def make_list_attribute_weather(self):

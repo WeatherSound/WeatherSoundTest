@@ -47,7 +47,8 @@ class PlaylistSerializer(serializers.ModelSerializer):
 class UserPlaylistSerializer(serializers.ModelSerializer):
     playlists = PlaylistSerializer(
         many=True,
-        read_only=True)
+        read_only=True,
+    )
     name_playlist = serializers.CharField(
         label='PlayList Name',
         max_length=30,
