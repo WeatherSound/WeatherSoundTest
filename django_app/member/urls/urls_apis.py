@@ -1,11 +1,9 @@
 from django.conf.urls import url
-from member import views, apis
+
+from member import apis
 
 urlpatterns = [
-    url(r'^$',
-        apis.UserListView.as_view(),
-        name='userlist'
-        ),
+
     url(r'^(?P<pk>\d+)/$',
         apis.UserRetrieveUpdateDestroyView.as_view(),
         name='userinfo'
@@ -41,4 +39,8 @@ urlpatterns = [
     url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
         apis.AccountActivationView.as_view(),
         name='activate'),
+    url(r'^$',
+        apis.UserListView.as_view(),
+        name='userlist'
+        ),
 ]

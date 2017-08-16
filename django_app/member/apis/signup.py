@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model, login as django_login
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
 from rest_framework import generics, status
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -10,7 +11,6 @@ from member.serializers import UserListSerializers, UserSignupSerializers
 from member.tokens import account_activation_token
 
 User = get_user_model()
-
 
 __all__ = (
     'UserListView',
@@ -47,6 +47,7 @@ class UserSignupView(generics.ListCreateAPIView):
     """
     permission_classes = (AllowAny,)
     queryset = User.objects.all().order_by('pk')
+    parser_classes = (MultiPartParser, FormParser)  # add
     pagination_class = None
 
     def get_serializer_class(self):

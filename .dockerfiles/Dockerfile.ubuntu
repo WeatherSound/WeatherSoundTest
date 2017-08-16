@@ -7,14 +7,20 @@ MAINTAINER  qufskan9396@gmail.com
 
 # 필요한소스설치 (-y는 자동으로 y를 눌러줌)
 RUN         apt-get -y update
+
 RUN         apt-get install -y python-pip
 RUN         apt-get install -y git vim
-
-# pyenv 설치
 RUN         apt-get install -y make build-essential libssl-dev zlib1g-dev libbz2-dev \
 libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils
+
+# npm, nodejs
+RUN         curl -sL https://deb.nodesource.com/setup_8.x | bash -
+RUN         apt-get install -y nodejs
+
+# pyenv 설치
 RUN         curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash
 ENV         PATH /root/.pyenv/bin:$PATH
+
 
 # python 설치
 RUN         pyenv install 3.6.1
@@ -36,11 +42,11 @@ RUN         pyenv virtualenv 3.6.1 weathersound
 # uwsgi install
 RUN         /root/.pyenv/versions/weathersound/bin/pip install uwsgi
 
-# Nginx install
+
 RUN         apt-get -y update
-# -y 옵션 빠짐
 RUN         apt-get -y upgrade
-# update해주면 upgrade도 해주는게 인지상정
+
+# Nginx install
 RUN         apt-get -y install nginx
 
 # Superviser

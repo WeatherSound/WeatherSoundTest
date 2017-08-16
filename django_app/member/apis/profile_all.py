@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import generics, permissions, status
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 
 from member.serializers.profile_all import UserListSerializers, \
@@ -19,6 +20,9 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     """
     queryset = User.objects.all()
     serializer_class = UserRetrieveUpdateDestroySerializers
+    parser_classes = (
+        MultiPartParser,
+        FormParser,)  # add
     permission_classes = (
         ObjectIsRequestUser,
         permissions.IsAuthenticated,
@@ -60,8 +64,8 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
             update_info.img_profile = user.img_profile if not request.data.get(
                 'img_profile', default=None) else request.data.get('img_profile')
             update_info.save()
-
             # 저장
+
             user_serializer = UserListSerializers(update_info, partial=True)
             content = {
                 "datail": "회원정보가 변경되었습니다.",

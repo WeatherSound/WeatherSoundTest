@@ -2,7 +2,7 @@
 from .base import *
 
 # TODO requirements의 deploy에 django_extensions 삭제하도록
-# deploy file settings
+# deploy file setting
 config_secret_deploy = json.loads(open(CONFIG_SECRET_DEPLOY_FILE).read())
 
 WSGI_APPLICATION = 'config.wsgi.deploy.application'
@@ -42,5 +42,3 @@ MEDIA_ROOT = os.path.join(ROOT_DIR, '.media')
 # 서버 실행시 구별용 출력
 print('@@@@@@@@@@ DEBUG: ', DEBUG)
 print('@@@@@@@@@@ ALLOWED_HOSTS: ', ALLOWED_HOSTS)
-
-# add_mp3_and_album_image_in_database()

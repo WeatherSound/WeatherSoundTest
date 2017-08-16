@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model, logout as django_logout, login as django_login, authenticate
 from django.core.exceptions import ObjectDoesNotExist
-from django.utils.translation import ugettext_lazy as _
 from rest_framework import status
 from rest_framework.authentication import BasicAuthentication, TokenAuthentication
 from rest_framework.authtoken.models import Token
