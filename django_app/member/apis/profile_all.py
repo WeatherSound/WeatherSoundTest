@@ -41,22 +41,27 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         serializer = serializer_class(user, data=request.data, partial=True)
 
         # 비밀번호를 변경하지 않을 경우
-        if request.data.get('password') == '' or request.data.get('password') is None:
+        # if request.data.get('password') == '' or request.data.get('password') is None:
+        # 변경할 비밀번호를 넣지 않은 경우 value='' or None 이므로 default값이 적용되는데
+        if not request.data.get('password', default=None):
             serializer.is_valid(raise_exception=True)
             update_info = serializer.save()
 
             # 닉네임 저장(수정하지 않으면 본래값)
-            update_info.nickname = user.nickname if request.data.get(
-                'nickname') == '' or request.data.get('nickname') is None else request.data.get('nickname')
+            # update_info.nickname = user.nickname if request.data.get(
+            #     'nickname') == '' or request.data.get('nickname') is None else request.data.get('nickname')
+            update_info.nickname = user.nickname if not request.data.get(
+                'nickname', default=None) else request.data.get('nickname')
             update_info.save()
-            print(2, update_info.nickname)
 
             # 프로필 이미지 저장(수정하지 않으면 본래값)
-            update_info.img_profile = user.img_profile if request.data.get(
-                'img_profile') == '' or request.data.get('img_profile') is None else request.data.get('img_profile')
+            # update_info.img_profile = user.img_profile if request.data.get(
+            #     'img_profile') == '' or request.data.get('img_profile') is None else request.data.get('img_profile')
+            update_info.img_profile = user.img_profile if not request.data.get(
+                'img_profile', default=None) else request.data.get('img_profile')
 
             update_info.save()
-            print('저장')
+            # 저장
             user_serializer = UserListSerializers(update_info, partial=True)
             content = {
                 "datail": "회원정보가 변경되었습니다.",
