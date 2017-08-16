@@ -17,12 +17,12 @@ __all__ = (
 
 
 class MyUserManager(BaseUserManager):
-    def create_user(self, user_type, username, nickname, email=None, password=None, **extra_fields):
+    def create_user(self, username, nickname, email=None, password=None, **extra_fields):
         try:
             user = self.model(
+                user_type=User.USER_TYPE_DJANGO,
                 username=self.normalize_email(username),
                 nickname=nickname,
-                user_type=user_type,
                 email=email if email else ''
             )
             extra_fields.setdefault('is_staff', False)
