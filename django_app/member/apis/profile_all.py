@@ -43,6 +43,7 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         user = User.objects.get(pk=kwargs['pk'])
         serializer_class = UserRetrieveUpdateDestroySerializers
         serializer = serializer_class(user, data=request.data, partial=True)
+        parser_classes = (MultiPartParser, FormParser,)  # 추가
 
         # 비밀번호를 변경하지 않을 경우
         # if request.data.get('password') == '' or request.data.get('password') is None:
@@ -118,5 +119,6 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         }
         super().destroy(self, request, *args, **kwargs)
         return Response(content, status=status.HTTP_202_ACCEPTED)
+
 
 generics.RetrieveDestroyAPIView
