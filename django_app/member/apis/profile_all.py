@@ -118,3 +118,5 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         }
         super().destroy(self, request, *args, **kwargs)
         return Response(content, status=status.HTTP_202_ACCEPTED)
+
+generics.RetrieveDestroyAPIView
