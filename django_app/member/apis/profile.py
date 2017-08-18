@@ -71,7 +71,7 @@ class UserPasswordUpdateView1(generics.RetrieveUpdateAPIView):
         print('ended!!')
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
-# TODO 통합변경 코드 삭제
+# TODO 통합변경 코드 추후에 코드 리뷰 후 삭제할 것
 # def put(self, request, *args, **kwargs):
     #     user = User.objects.get(pk=kwargs['pk'])
     #     serializer_class = UserRetrieveUpdateDestroySerializers
