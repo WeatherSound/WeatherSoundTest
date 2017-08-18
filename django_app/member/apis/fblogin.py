@@ -51,22 +51,12 @@ class FacebookLoginAPIView(APIView):
         # 검증한 결과를 debug_result에 할당
         self.debug_token(token)
         user_info = self.get_user_info(token=token)
-        print(user_info)
         # 이미 존재하면 가져오고 없으면 페이스북 유저 생성
         if User.objects.filter(username=user_info['id']).exists():
             user = User.objects.get(username=user_info['id'])
-            # if user_info['picture']['data']['is_silhouette'] is False:
-            facebook_profile = user_info['picture']['data']['url']
-            print('profile_url::: ', facebook_profile)
-            user.img_profile = facebook_profile.split("?")[0]
-            print(11111111111111111111, user.img_profile)
-            user.save()
+        # 모델 매니저를 통하여 페이스북 유저정보를 저장하고 유저 생성
         else:
-            user = User.objects.create_facebook_user(user_info)
-            if user_info['picture']['data']['is_silhouette'] is False:
-                user.img_profile = user_info['picture']['data']['url'].split("?")
-                print(11111111111111111111, user.img_profile)
-                user.save()
+            user = User.objects.get_or_create_facebook_user(user_info)
 
         # DRF 토큰을 생성
         token, token_created = Token.objects.get_or_create(user=user)
@@ -86,23 +76,31 @@ class FacebookLoginAPIView(APIView):
         authResponse 내의 access token 값
         :return: Facebook API의 debug_token 실행 후의 결과
         """
+        # 디버그할 토큰을 보낼 url
         url_debug_token = "https://graph.facebook.com/debug_token"
+        # 받아온 액세스토큰과 앱 아이디를 파라미터로 보내기 위해 딕셔너리에 넣어준다.
         url_debug_token_params = {
             'input_token': token,
             'access_token': self.APP_ACCESS_TOKEN,
         }
+        # requests 모듈을 사용하여 response를 받아온다
         response = requests.get(url_debug_token, url_debug_token_params)
+        # 받아온 response를 json 구조로 출력
         result = response.json()
+        # 만약 응답에 에러가 있을 경우에는 API 예외처리를 해준다.
         if 'error' in result or 'error' in result['data']:
             raise APIException({"detail": "토큰이 유효하지 않습니다."})
         return result
 
     def get_user_info(self, token):
+        """
+        액세스 토큰을 사용하여 페이스북에 등록된 유저의 정보를 가져온다.
+        """
         url_user_info = 'https://graph.facebook.com/v2.9/me'
         url_user_info_params = {
             'access_token': token,
             # 권한을 요청하지 않아도 오는 기본 정보
-            # 반드시 scope 내용을 적어줘야한다.
+            # 반드시 scope 내용(받아올 정보)을 적어줘야한다.
             'fields': ','.join([
                 'id',
                 'name',
@@ -113,8 +111,8 @@ class FacebookLoginAPIView(APIView):
                 'gender',
             ])
         }
+        # 요청을 보내 response를 받는다.
         response = requests.get(url_user_info, params=url_user_info_params)
         result = response.json()
-        print(result)
         return result
 
