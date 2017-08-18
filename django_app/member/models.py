@@ -55,6 +55,7 @@ class MyUserManager(BaseUserManager):
         except ValidationError:
             raise ValidationError("이메일 양식이 올바르지 않습니다.")
 
+    # 페이스북 유저정보가 있으면 가져오거나 없으면 생성
     def get_or_create_facebook_user(self, user_info):
         fb_user, user_created = self.get_or_create(
             user_type=User.USER_TYPE_FACEBOOK,
@@ -63,11 +64,13 @@ class MyUserManager(BaseUserManager):
             email='',
         )
 
+        # 유저가 생성된 경우 페이스북의 프로필 이미지를 가져온다.
         if user_created and user_info.get('picture'):
             url_profile = user_info['picture']['data']['url']
 
             # 이미지 확장자를 가져오는 정규표현식
             p = re.compile(r'.*\.([^?]+)')
+            # 받아온 url_profile을 정규표현식에 일치하는 패턴으로 검사하여 값을 찾는다.
             img_ext = re.search(p, url_profile).group(1)
             img_name = '{}.{}'.format(
                 fb_user.pk,
@@ -80,7 +83,8 @@ class MyUserManager(BaseUserManager):
             # 임시 파일객체에 다운로드한 이미지를 기록
             temp_file.write(response.content)
             # 페이스북 유저의 이미지를 주어진 이름으로 저장
-            fb_user.img_profile.save('fb_profile.jpg', temp_file)
+            fb_user.img_profile.save('fb_profile_{}'.format(
+                img_name), temp_file)
             return fb_user
 
 
