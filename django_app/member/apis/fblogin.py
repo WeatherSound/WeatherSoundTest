@@ -55,18 +55,10 @@ class FacebookLoginAPIView(APIView):
         # 이미 존재하면 가져오고 없으면 페이스북 유저 생성
         if User.objects.filter(username=user_info['id']).exists():
             user = User.objects.get(username=user_info['id'])
-            # if user_info['picture']['data']['is_silhouette'] is False:
-            facebook_profile = user_info['picture']['data']['url']
-            print('profile_url::: ', facebook_profile)
-            user.img_profile = facebook_profile.split("?")[0]
-            print(11111111111111111111, user.img_profile)
-            user.save()
+        # 모델 매니저를 통하여 페이스북 유저정보를 저장하고 유저 생성
         else:
-            user = User.objects.create_facebook_user(user_info)
-            if user_info['picture']['data']['is_silhouette'] is False:
-                user.img_profile = user_info['picture']['data']['url'].split("?")
-                print(11111111111111111111, user.img_profile)
-                user.save()
+            user = User.objects.get_or_create_facebook_user(user_info)
+
 
         # DRF 토큰을 생성
         token, token_created = Token.objects.get_or_create(user=user)

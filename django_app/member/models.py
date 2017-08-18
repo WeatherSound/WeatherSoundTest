@@ -1,7 +1,11 @@
+import re
+
+import requests
 from django.contrib.auth import models as auth_models, get_user_model
 from django.contrib.auth.base_user import BaseUserManager
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager as DjangoUserManager
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager as DjangoUserManager, UserManager
 from django.core.exceptions import ValidationError
+from django.core.files.temp import NamedTemporaryFile
 from django.core.mail import send_mail
 from django.core.validators import validate_email
 from django.db import models
@@ -51,17 +55,33 @@ class MyUserManager(BaseUserManager):
         except ValidationError:
             raise ValidationError("이메일 양식이 올바르지 않습니다.")
 
-#
-# class FacebookUserManager(DjangoUserManager):
-    def create_facebook_user(self, user_info):
-        fb_user = self.create_user(
+    def get_or_create_facebook_user(self, user_info):
+        fb_user, user_created = self.get_or_create(
             user_type=User.USER_TYPE_FACEBOOK,
             username=user_info['id'],
-            nickname=user_info['first_name'] + user_info['last_name'],
+            nickname=user_info['first_name'],
             email='',
         )
-        fb_user.save()
-        return fb_user
+
+        if user_created and user_info.get('picture'):
+            url_profile = user_info['picture']['data']['url']
+
+            # 이미지 확장자를 가져오는 정규표현식
+            p = re.compile(r'.*\.([^?]+)')
+            img_ext = re.search(p, url_profile).group(1)
+            img_name = '{}.{}'.format(
+                fb_user.pk,
+                img_ext
+            )
+            # 이미지 파일을 임시로 저장할 파일 객체를 할당
+            temp_file = NamedTemporaryFile()
+            # 이미지를 다운로드함
+            response = requests.get(url_profile)
+            # 임시 파일객체에 다운로드한 이미지를 기록
+            temp_file.write(response.content)
+            # 페이스북 유저의 이미지를 주어진 이름으로 저장
+            fb_user.img_profile.save('fb_profile.jpg', temp_file)
+            return fb_user
 
 
 # 사용자 정보 모델
