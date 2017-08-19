@@ -264,8 +264,15 @@ class PlaylistManager(models.Manager):
         for user in users:
             playlists = Playlist.objects.filter(user=user).order_by("pk")
             for i, playlist in enumerate(playlists):
+                playlist.make_weather()
                 playlist.playlist_id = i + 1
                 playlist.save()
+
+    def make_playlist_weather(self):
+        # list의 날씨만들기
+        playlists = Playlist.objects.all()
+        for playlist in playlists:
+            playlist.make_weather()
 
     def make_weather_recommand_list(self, **kwargs):
         """
@@ -282,6 +289,7 @@ class PlaylistManager(models.Manager):
                 musics = Music.objects.all().order_by("-" + play_list.weather)[:20]
                 play_list.playlist_musics.all().delete()
                 play_list.add_musics(musics=musics)
+            self.make_playlist_id()
 
     def create_main_list(self, ):
         """
@@ -304,6 +312,7 @@ class PlaylistManager(models.Manager):
         snowy, _ = self.get_or_create(user=admin, name_playlist="snowy", weather="snowy")
         snowy.make_id()
         self.make_weather_recommand_list()
+        self.make_playlist_id()
 
         return sunny, foggy, rainy, cloudy, snowy
 
@@ -364,6 +373,10 @@ class Playlist(models.Model):
             return max(results, key=lambda i: results[i])
         except Exception as e:
             return "빈 리스트"
+
+    def make_weather(self):
+        self.weather = self.make_list_attribute_weather
+        pass
 
     def add_music(self, music):
         # TODO 아마 사용은 주소로 들어올테니 music 객체를 찾도록 추후 수정

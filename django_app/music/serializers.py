@@ -31,10 +31,32 @@ class MusicSerializer(serializers.ModelSerializer):
 
 class MainPlaylistSerializer(serializers.ModelSerializer):
     playlist_musics = MusicSerializer(many=True, read_only=True)
-    weathers = serializers.CharField(
-        help_text="sunny, foggy, rainy, cloudy, snowy",
-        label="weather",
+    # weathers = serializers.CharField(
+    #     help_text="sunny, foggy, rainy, cloudy, snowy",
+    #     label="weather",
+    #     max_length=10,
+    #     allow_blank=True,
+    #     write_only=True,
+    # )
+    latitude = serializers.CharField(
+        help_text="Latitute",
+        label="Latitute",
         max_length=10,
+        allow_blank=True,
+        write_only=True,
+
+    )
+    longitude = serializers.CharField(
+        help_text="Longitude",
+        label="Longitude",
+        max_length=10,
+        allow_blank=True,
+        write_only=True,
+    )
+    number = serializers.CharField(
+        help_text="Number of Musics",
+        label="Number",
+        max_length=2,
         allow_blank=True,
         write_only=True,
     )
@@ -47,7 +69,10 @@ class MainPlaylistSerializer(serializers.ModelSerializer):
             "weather",
             "playlist_id",
             "playlist_musics",
-            "weathers",
+            # "weathers",
+            "latitude",
+            "longitude",
+            "number",
         )
 
         read_only_fields = (
