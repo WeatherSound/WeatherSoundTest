@@ -145,6 +145,7 @@ class MusicManager(models.Manager):
         return self.order_by("-" + weather)[:12]
 
     def create_dummy(self, song_name):
+        # for Test
         a = []
         while sum(a) == 0:
             a = [randint(0, 10) for x in range(5)]
@@ -262,7 +263,7 @@ class PlaylistManager(models.Manager):
     def make_playlist_id(self):
         users = User.objects.all()
         for user in users:
-            playlists = Playlist.objects.filter(user=user).order_by("pk")
+            playlists = Playlist.objects.prefetch_related("user").filter(user=user).order_by("pk")
             for i, playlist in enumerate(playlists):
                 playlist.playlist_id = i + 1
                 playlist.save()
@@ -292,6 +293,8 @@ class PlaylistManager(models.Manager):
 
         if len(self.filter(user=admin)) > 4:
             return self.all()[:4]
+
+        Playlist.objects.select_related("user").filter(user=admin).delete()
 
         sunny, _ = self.get_or_create(user=admin, name_playlist="sunny", weather="sunny")
         sunny.make_id()
@@ -339,6 +342,15 @@ class Playlist(models.Model):
     class Meta:
         unique_together = ("user", "name_playlist")
 
+    def delete_music(self, music_pk):
+        # 예외처리
+        # --> apiView에서 처리
+        music = Music.objects.get(pk=music_pk)
+        PlaylistMusics.objects.select_related("music").get(
+            name_playlist=self,
+            music=music,
+        ).delete()
+
     # TODO 임시방편 manager에 넣는게 좋을듯, filter시 id최대값 +1로 변경
     def make_id(self):
         self.playlist_id = len(Playlist.objects.filter(user=self.user))
@@ -352,13 +364,13 @@ class Playlist(models.Model):
             우선은 단순히 날씨별 가장 높은 것을 카운트
         :return:
         """
+
         results = self.playlist_musics.aggregate(
             sunny=Sum("sunny"),
             foggy=Sum("foggy"),
             rainy=Sum("rainy"),
             cloudy=Sum("cloudy"),
             snowy=Sum("snowy"),
-
         )
         try:
             return max(results, key=lambda i: results[i])
@@ -366,9 +378,10 @@ class Playlist(models.Model):
             return "빈 리스트"
 
     def add_music(self, music):
+
         # TODO 아마 사용은 주소로 들어올테니 music 객체를 찾도록 추후 수정
         """
-            음악을 리스트에 추가하고 weather필드에 날씨 업데이트
+        음악을 리스트에 추가하고 weather필드에 날씨 업데이트
         :param music: 리스트에 들어갈 음악
         :return:
         """

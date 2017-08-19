@@ -119,7 +119,7 @@ class UserMusiclistRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
                 "detail": "User does not exist",
             }
             return Response(context, status=status.HTTP_404_NOT_FOUND)
-
+        # Playlist Name이 존재하면
         pl_name = request.data.get('name_playlist', None)
 
         if not pl_name:
@@ -129,7 +129,6 @@ class UserMusiclistRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
             return Response(context, status=status.HTTP_404_NOT_FOUND)
 
         pl, pl_created = Playlist.objects.get_or_create(user=user, name_playlist=pl_name)
-
         if music_pk:
             try:
                 music = Music.objects.get(pk=music_pk)
@@ -165,7 +164,11 @@ class UserPlayListMusicsRetrieveDestroy(generics.RetrieveUpdateDestroyAPIView):
         try:
             playlist = kwargs["playlist_pk"]
             user = self.queryset.get(pk=kwargs["pk"])
-            queryset = Playlist.objects.get(user=user, playlist_id=playlist)
+            # queryset = Playlist.objects.get(user=user, playlist_id=playlist)
+            queryset = Playlist.objects.select_related("user").get(
+                user=user,
+                playlist_id=playlist,
+            )
         except User.DoesNotExist as e:
             context = {
                 "detail": "User does not exists",
