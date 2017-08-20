@@ -72,6 +72,9 @@ class MainPlaylistListView(generics.ListAPIView):
                 serializer = self.serializer_class(queryset)
                 content = {
                     "context": "Main list {}.".format(weather.current_weather),
+                    "address": weather.location,
+                    "weather": weather.current_weather,
+                    "temperature": weather.temperature,
                     "listInfo": serializer.data,
                 }
                 return Response(content, status.HTTP_202_ACCEPTED)
