@@ -57,6 +57,7 @@ class MainPlaylistListView(generics.ListAPIView):
         Playlist.objects.create_main_list()
         queryset = self.get_queryset()
         serializer = MainPlaylistSerializer(queryset, many=True)
+        user = request.user
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
@@ -94,6 +95,8 @@ class UserMusiclistRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
     serializer_class = UserPlaylistSerializer
     permission_classes = (
         permissions.IsAuthenticated,
+        # DjangoModelPermissions,
+        # DjangoModelPermissionsOrAnonReadOnly,
         ObjectIsRequestUser,
     )
 
@@ -161,6 +164,7 @@ class UserPlayListMusicsRetrieveDestroy(generics.RetrieveUpdateDestroyAPIView):
     parser_classes = (MultiPartParser, FormParser, JSONParser)
     permission_classes = (
         permissions.IsAuthenticated,
+        # DjangoModelPermissionsOrAnonReadOnly,
         # ObjectIsRequestUser,
     )
 

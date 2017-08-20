@@ -7,3 +7,7 @@ class ObjectIsRequestUser(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         return obj == request.user
+
+
+class ObjectPermission(permissions.BasePermission):
+    pass
