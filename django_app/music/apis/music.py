@@ -193,19 +193,23 @@ class UserPlayListMusicsRetrieveDestroy(generics.RetrieveUpdateDestroyAPIView):
 
     # Playlist 음악 삭제
     def put(self, request, *args, **kwargs):
-        music_deleted = request.data.get("music", None)
-        if music_deleted:
+        music_deleteds = request.data.get("music", None)
+        if music_deleteds:
             try:
+                # 삭제되던 중간에 에러 발생시의 처리?
+                music_deleteds = music_deleteds.split(",")
                 pk = kwargs["pk"]
                 playlist_pk = kwargs["playlist_pk"]
                 playlist = Playlist.objects.prefetch_related("user").get(
                     user_id=pk, playlist_id=playlist_pk)
-                music = playlist.playlist_musics.filter(pk=music_deleted)
-                # playlist.playlist_musics.filter(id=music[0].id).delete()
-                PlaylistMusics.objects.filter(
-                    name_playlist__playlist_id=playlist_pk,
-                    music=music,
-                ).delete()
+                for music_deleted in music_deleteds:
+                    music_deleted = music_deleted.strip()
+
+                    music = playlist.playlist_musics.filter(pk=music_deleted)
+                    PlaylistMusics.objects.filter(
+                        name_playlist__playlist_id=playlist_pk,
+                        music=music,
+                    ).delete()
 
             except Playlist.DoesNotExist as e:
                 context = {
