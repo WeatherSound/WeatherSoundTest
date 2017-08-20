@@ -25,6 +25,7 @@ class MusicSerializer(serializers.ModelSerializer):
             'name_music',
             'name_artist',
             'source_music',
+            "time_music",
             "lyrics",
         )
 
@@ -53,13 +54,14 @@ class MainPlaylistSerializer(serializers.ModelSerializer):
         allow_blank=True,
         write_only=True,
     )
-    number = serializers.CharField(
-        help_text="Number of Musics",
-        label="Number",
-        max_length=2,
-        allow_blank=True,
-        write_only=True,
-    )
+
+    # number = serializers.CharField(
+    #     help_text="Number of Musics",
+    #     label="Number",
+    #     max_length=2,
+    #     allow_blank=True,
+    #     write_only=True,
+    # )
 
     class Meta:
         model = Playlist
@@ -72,7 +74,7 @@ class MainPlaylistSerializer(serializers.ModelSerializer):
             # "weathers",
             "latitude",
             "longitude",
-            "number",
+            # "number",
         )
 
         read_only_fields = (

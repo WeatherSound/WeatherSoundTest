@@ -48,10 +48,13 @@ class MainPlaylistListView(generics.ListAPIView):
         list : 5가지의 날씨를 다 보여준다
         post (날씨) : 그 날씨에 맞는 리스트의 곡리스트를 보여준다
     """
-    queryset = Playlist.objects.prefetch_related("playlist_musics").filter(user=1)
+    # queryset = Playlist.objects.prefetch_related("playlist_musics").filter(user=1)
+    queryset = Playlist.objects.select_related("user").prefetch_related(
+        "playlist_musics").filter(user=1)
     serializer_class = MainPlaylistSerializer
 
     def get(self, request, *args, **kwargs):
+        Playlist.objects.create_main_list()
         queryset = self.get_queryset()
         serializer = MainPlaylistSerializer(queryset, many=True)
         return Response(serializer.data)
@@ -60,7 +63,7 @@ class MainPlaylistListView(generics.ListAPIView):
         # 없을시, 숫자가 아닐시
         latitude = request.data.get("latitude", None)
         longitude = request.data.get("longitude", None)
-        number = request.data.get("number", None)
+        # number = request.data.get("number", None)
         if latitude and longitude:
             try:
                 float(latitude), float(longitude)
@@ -69,50 +72,20 @@ class MainPlaylistListView(generics.ListAPIView):
                 queryset = self.queryset.get(name_playlist=weather.current_weather)
             except Playlist.DoesNotExist as e:
                 Playlist.objects.create_main_list()
-            except Exception as e:
+            else:
+                serializer = self.serializer_class(queryset)
                 content = {
-                    "detail": "Enter correct Latitude and Longitude",
+                    "context": "Main list {}.".format(weather.current_weather),
+                    "address": weather.location,
+                    "weather": weather.current_weather,
+                    "temperature": weather.temperature,
+                    "listInfo": serializer.data,
                 }
-                return Response(content, status.HTTP_400_BAD_REQUEST)
-
-            serializer = self.serializer_class(queryset)
-            content = {
-                "context": "Main list {}.".format(weather.current_weather),
-                "listInfo": serializer.data,
-            }
-            return Response(content, status.HTTP_202_ACCEPTED)
+                return Response(content, status.HTTP_202_ACCEPTED)
         content = {
             "detail": "Enter correct Latitude and Longitude",
         }
         return Response(content, status.HTTP_400_BAD_REQUEST)
-
-        # def post(self, request, *args, **kwargs):
-        #     weathers = (
-        #         "sunny",
-        #         "foggy",
-        #         "rainy",
-        #         "cloudy",
-        #         "snowy",
-        #     )
-        #     weather = request.data.get("weathers", None)
-        #
-        #     if weather in weathers:
-        #         Playlist.objects.make_weather_recommand_list()
-        #         try:
-        #             queryset = self.queryset.get(name_playlist=weather)
-        #         except Playlist.DoesNotExist as e:
-        #             Playlist.objects.create_main_list()
-        #         serializer = self.serializer_class(queryset)
-        #         content = {
-        #             "detail": "Main list {}.".format(weather),
-        #             "listInfo": serializer.data,
-        #         }
-        #         return Response(content, status.HTTP_202_ACCEPTED)
-        #     content = {
-        #         "detail": "Wrong Weather.",
-        #         "description": "sunny, foggy, rainy, cloudy, snowy",
-        #     }
-        #     return Response(content, status.HTTP_400_BAD_REQUEST)
 
 
 # User의 모든 playlists

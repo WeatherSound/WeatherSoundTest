@@ -95,14 +95,21 @@ class WeatherManager(models.Manager):
         url = "https://maps.googleapis.com/maps/api/geocode/json" \
               "?latlng={LATITUDE},{LONGITUDE}" \
               "&key={SECRET_KEY}" \
-              "&language=ko" \
-              "&result_type={result_type}".format(LATITUDE=latitude,
-                                                  LONGITUDE=longitude,
-                                                  SECRET_KEY=settings.GOOGLE_API_KEY,
-                                                  result_type="sublocality", )
+              "&language=ko".format(LATITUDE=latitude,
+                                    LONGITUDE=longitude,
+                                    SECRET_KEY=settings.GOOGLE_API_KEY, )
 
         # TODO 날씨 구단위로
-        return requests.get(url).json()["results"][0]["formatted_address"]
+        data = requests.get(url).json()
+        try:
+            addr = data["results"]
+            if len(addr) > 6:
+                location = addr[5]["formatted_address"]
+            else:
+                location = addr[0]["formatted_address"]
+        except Exception as e:
+            location = "Fantasy"
+        return location
 
     def _get_weather_info(self, latitude, longitude):
         url = "https://api.darksky.net/forecast/" \
@@ -112,7 +119,7 @@ class WeatherManager(models.Manager):
                                               LONGITUDE=longitude, )
         data = requests.get(url=url).json()
         current_weather = self.weather_dict[data["currently"]["icon"]]
-        temperature = data["currently"]["temperature"]
+        temperature = round((data["currently"]["temperature"] - 32) / 1.8, 2)
         return current_weather, temperature
 
     def create_or_update_weather(self, latitude, longitude):
@@ -261,9 +268,10 @@ class Weather(models.Model):
 
 class PlaylistManager(models.Manager):
     def make_playlist_id(self):
-        users = User.objects.all()
+        users = User.objects.prefetch_related("playlists").all()
         for user in users:
-            playlists = Playlist.objects.prefetch_related("user").filter(user=user).order_by("pk")
+            # playlists = Playlist.objects.prefetch_related("user").filter(user=user).order_by("pk")
+            playlists = user.playlists.all()
             for i, playlist in enumerate(playlists):
                 playlist.make_weather()
                 playlist.playlist_id = i + 1
@@ -280,15 +288,19 @@ class PlaylistManager(models.Manager):
            추천리스트 생성, 1시간 단위
         :return:
         """
-        play_lists = self.filter(user_id=1)  # TODO 필터 조건을 좀더 정교하게
+        play_lists = self.select_related("user").filter(user_id=1)  # TODO 필터 조건을 좀더 정교하게
         for play_list in play_lists:
-            if not len(play_list.playlist_musics.all()):  # 모종의 사건으로 메인리스트 음악 유실시
-                musics = Music.objects.all().order_by("-" + play_list.weather)[:20]
-                play_list.playlist_musics.all().delete()
+            if len(play_list.playlist_musics.all()) < 20:  # 모종의 사건으로 메인리스트 음악 유실시
+                musics = Music.objects.all().order_by("-" + play_list.name_playlist)[:20]
+                # play_list.playlist_musics.all().delete()
+                PlaylistMusics.objects.select_related("name_playlist").filter(
+                    name_playlist=play_list).delete()
                 play_list.add_musics(musics=musics)
             if (timezone.now() - play_list.date_added).seconds >= 3600:  # 업데이트된지 시간이 1시간이 지났을시
-                musics = Music.objects.all().order_by("-" + play_list.weather)[:20]
-                play_list.playlist_musics.all().delete()
+                musics = Music.objects.all().order_by("-" + play_list.name_playlist)[:20]
+                # play_list.playlist_musics.all().delete()
+                PlaylistMusics.objects.select_related("name_playlist").filter(
+                    name_playlist=play_list).delete()
                 play_list.add_musics(musics=musics)
             self.make_playlist_id()
 
@@ -299,7 +311,7 @@ class PlaylistManager(models.Manager):
         """
         admin = User.objects.get(pk=1)  # filter is_superuser true?
 
-        if len(self.filter(user=admin)) > 4:
+        if len(self.select_related("user").filter(user=admin)) > 4:
             return self.all()[:4]
 
         Playlist.objects.select_related("user").filter(user=admin).delete()
