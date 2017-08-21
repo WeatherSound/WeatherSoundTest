@@ -118,8 +118,8 @@ class UserPlaylistSerializer(serializers.ModelSerializer):
         many=True,
         read_only=True,
     )
-    name_playlist = serializers.CharField(
-        label='PlayList Name',
+    create_playlist = serializers.CharField(
+        label='Create PlayList Name',
         max_length=30,
         allow_blank=True,
         write_only=True,  # 주의
@@ -130,6 +130,12 @@ class UserPlaylistSerializer(serializers.ModelSerializer):
         allow_blank=True,
         write_only=True,
     )
+    delete_playlist = serializers.CharField(
+        label='Delete PlayList Name',
+        max_length=30,
+        allow_blank=True,
+        write_only=True,  # 주의
+    )
 
     class Meta:
         model = User
@@ -138,7 +144,8 @@ class UserPlaylistSerializer(serializers.ModelSerializer):
             "username",  # email
             "nickname",  # nickname
             "playlists",
-            "name_playlist",
+            "create_playlist",
+            "delete_playlist",
             "music",
         )
         read_only_fields = (
