@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from music.models import Music, Playlist, PlaylistMusics, Weather
 from music.permissions import IsOwnerOrReadOnly
 from music.serializers import MusicSerializer, PlaylistSerializer, UserPlaylistSerializer, MainPlaylistSerializer
-from permissions import ObjectIsRequestUser
+from permissions import ObjectHasPermission
 
 __all__ = (
     'MusicListCreateView',
@@ -48,7 +48,6 @@ class MainPlaylistListView(generics.ListAPIView):
         list : 5가지의 날씨를 다 보여준다
         post (날씨) : 그 날씨에 맞는 리스트의 곡리스트를 보여준다
     """
-    # queryset = Playlist.objects.prefetch_related("playlist_musics").filter(user=1)
     queryset = Playlist.objects.select_related("user").prefetch_related(
         "playlist_musics").filter(user=1)
     serializer_class = MainPlaylistSerializer
@@ -95,9 +94,8 @@ class UserMusiclistRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
     serializer_class = UserPlaylistSerializer
     permission_classes = (
         permissions.IsAuthenticated,
-        # DjangoModelPermissions,
-        # DjangoModelPermissionsOrAnonReadOnly,
-        ObjectIsRequestUser,
+        # ObjectHasPermission,
+        # ObjectIsRequestUser,
     )
 
     def get(self, request, *args, **kwargs):
@@ -118,8 +116,9 @@ class UserMusiclistRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
     # 플레이리스트 리스트 + 리스트에 음악 추가
     def put(self, request, *args, **kwargs):  # make peronal list
         # Playlist Name이 존재하면
-        pl_name = request.data.get('name_playlist', None)
-        if not pl_name:
+        pl_name = request.data.get('create_playlist', None)
+        pl_name_deleted = request.date.get("delete_playlist", None)
+        if not pl_name ^ pl_name_deleted: # 둘다 있거나 둘다 없으면
             context = {
                 "detail": "Enter Playlist"
             }
@@ -164,8 +163,7 @@ class UserPlayListMusicsRetrieveDestroy(generics.RetrieveUpdateDestroyAPIView):
     parser_classes = (MultiPartParser, FormParser, JSONParser)
     permission_classes = (
         permissions.IsAuthenticated,
-        # DjangoModelPermissionsOrAnonReadOnly,
-        # ObjectIsRequestUser,
+        ObjectHasPermission,  # 내꺼
     )
 
     def get(self, request, *args, **kwargs):
@@ -193,6 +191,9 @@ class UserPlayListMusicsRetrieveDestroy(generics.RetrieveUpdateDestroyAPIView):
 
     # Playlist 음악 삭제
     def put(self, request, *args, **kwargs):
+        permission_classes = [
+            ObjectHasPermission,
+        ]
         music_deleteds = request.data.get("music", None)
         if music_deleteds:
             try:

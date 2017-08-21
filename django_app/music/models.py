@@ -309,9 +309,9 @@ class PlaylistManager(models.Manager):
             최초 메인 추천리스트 생성
         :return: 추천리스트 5개
         """
-        admin = User.objects.get(pk=1)  # filter is_superuser true?
+        admin = User.objects.first()  # filter is_superuser true?
 
-        if len(self.select_related("user").filter(user=admin)) > 4:
+        if len(self.select_related("user").filter(user=admin)) >= 5:
             return self.all()[:4]
 
         Playlist.objects.select_related("user").filter(user=admin).delete()
