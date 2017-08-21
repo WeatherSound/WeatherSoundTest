@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from music.models import Music, Playlist, PlaylistMusics, Weather
 from music.permissions import IsOwnerOrReadOnly
 from music.serializers import MusicSerializer, PlaylistSerializer, UserPlaylistSerializer, MainPlaylistSerializer
-from permissions import ObjectHasPermission
+from permissions import ObjectHasPermission, ObjectIsRequestUser
 
 __all__ = (
     'MusicListCreateView',
@@ -99,7 +99,7 @@ class UserMusiclistRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
     permission_classes = (  # TODO 퍼미션 체크 확실히
         permissions.IsAuthenticated,
         # ObjectHasPermission,
-        # ObjectIsRequestUser,
+        ObjectIsRequestUser,
     )
 
     # 개인이 가진 모든 플레이 리스트
@@ -125,7 +125,7 @@ class UserMusiclistRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
             user = self.get_queryset().get(pk=kwargs["pk"])  # user find
             pl, pl_created = Playlist.objects.get_or_create(user=user, name_playlist=pl_name)  # pl create or find
             music_pks = request.data.get("music", None)  # get music  pk
-            if music_pks: # 콤마로 구분된 음악들을 넣는다
+            if music_pks:  # 콤마로 구분된 음악들을 넣는다
                 music_pks = [pk.strip() for pk in music_pks.split(",") if pk]
                 for music_pk in music_pks:
                     music = Music.objects.get(pk=music_pk)  # music find
@@ -231,13 +231,14 @@ class UserPlayListMusicsRetrieveDestroy(generics.RetrieveUpdateDestroyAPIView):
 
     # Playlist 음악 삭제
     def put(self, request, *args, **kwargs):
+        permissions = ObjectHasPermission
         deleted_musics = request.data.get("music", None)
         if deleted_musics:
             try:
                 # 삭제되던 중간에 에러 발생시의 처리?
                 deleted_musics = [musics.strip() for musics in deleted_musics.split(",") if musics]
                 pk = kwargs["pk"]
-                playlist_pk = kwargs["playlist_pk"] # TODO id를 받는데 변수명은 pk 고치자
+                playlist_pk = kwargs["playlist_pk"]  # TODO id를 받는데 변수명은 pk 고치자
                 playlist = Playlist.objects.prefetch_related("user").get(
                     user_id=pk, playlist_id=playlist_pk)
                 for music_deleted in deleted_musics:
