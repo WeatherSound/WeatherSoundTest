@@ -49,30 +49,34 @@ class MainPlaylistListView(generics.ListAPIView):
         post (날씨) : 그 날씨에 맞는 리스트의 곡리스트를 보여준다
     """
     queryset = Playlist.objects.select_related("user").prefetch_related(
-        "playlist_musics").filter(user=1)
+        "playlist_musics").filter(user=User.objects.first())  # 첫번째 유저가 admin이라는 전제하에
     serializer_class = MainPlaylistSerializer
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):  # 5가지 날씨의 추천리스트를 보여준다
         Playlist.objects.create_main_list()
         queryset = self.get_queryset()
         serializer = MainPlaylistSerializer(queryset, many=True)
-        user = request.user
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
-        # 없을시, 숫자가 아닐시
+        """
+            위도와 경도를 입력받아 해당 지역에 맞는 추천리스트를 토한다
+        :return: 5가지 추천리스트 중 1개
+        """
         latitude = request.data.get("latitude", None)
         longitude = request.data.get("longitude", None)
-        # number = request.data.get("number", None)
-        if latitude and longitude:
+        if latitude and longitude:  # 위도 경도 다 입력되었으면
             try:
-                float(latitude), float(longitude)
+                float(latitude), float(longitude)  # 입력 string이 float형이 아니면 예외처리
                 weather = Weather.object.create_or_update_weather(latitude, longitude)
-                Playlist.objects.make_weather_recommand_list()
-                queryset = self.queryset.get(name_playlist=weather.current_weather)
-            except Playlist.DoesNotExist as e:
                 Playlist.objects.create_main_list()
+                # Playlist.objects.make_weather_recommand_list()
+                queryset = self.queryset.get(name_playlist=weather.current_weather)
+            except  Exception as e:
+                pass
+            # 아마 일어날일이 없을듯
             else:
+                # 예외 처리가 일어나지 않으면 정상 작동처리
                 serializer = self.serializer_class(queryset)
                 content = {
                     "context": "Main list {}.".format(weather.current_weather),
@@ -92,12 +96,13 @@ class MainPlaylistListView(generics.ListAPIView):
 class UserMusiclistRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserPlaylistSerializer
-    permission_classes = (
+    permission_classes = (  # TODO 퍼미션 체크 확실히
         permissions.IsAuthenticated,
         # ObjectHasPermission,
         # ObjectIsRequestUser,
     )
 
+    # 개인이 가진 모든 플레이 리스트
     def get(self, request, *args, **kwargs):
         try:
             user = self.get_queryset().get(pk=kwargs["pk"])
@@ -113,39 +118,35 @@ class UserMusiclistRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
         return Response(context, status=status.HTTP_200_OK)
 
     # TODO 리스트 내에 음악 중복처리
-    # 플레이리스트 리스트 + 리스트에 음악 추가
-    def put(self, request, *args, **kwargs):  # make peronal list
-        # Playlist Name이 존재하면
-        pl_name = request.data.get('create_playlist', None)
-        pl_name_deleted = request.date.get("delete_playlist", None)
-        if not (pl_name ^ pl_name_deleted): # 둘다 있거나 둘다 없으면
-            context = {
-                "detail": "Enter Playlist"
-            }
-            return Response(context, status=status.HTTP_404_NOT_FOUND)
-
+    # Playlist 추가 + 음악추가
+    def post(self, request, *args, **kwargs):
         try:
-            user = self.get_queryset().get(pk=kwargs["pk"])
-            music_pk = request.data.get("music", None)
+            pl_name = request.data.get('create_playlist', None)
+            user = self.get_queryset().get(pk=kwargs["pk"])  # user find
+            pl, pl_created = Playlist.objects.get_or_create(user=user, name_playlist=pl_name)  # pl create or find
+            music_pks = request.data.get("music", None)  # get music  pk
+            if music_pks: # 콤마로 구분된 음악들을 넣는다
+                music_pks = [pk.strip() for pk in music_pks.split(",") if pk]
+                for music_pk in music_pks:
+                    music = Music.objects.get(pk=music_pk)  # music find
+                    pl.add_music(music=music)
+            Playlist.objects.make_playlist_id()
         except User.DoesNotExist as e:
             context = {
-                "detail": "User does not exist",
+                "detail": "User Does not exist",
             }
             return Response(context, status=status.HTTP_404_NOT_FOUND)
-
-        pl, pl_created = Playlist.objects.get_or_create(user=user, name_playlist=pl_name)
-        Playlist.objects.make_playlist_id()
-        if music_pk:
-            try:
-                music = Music.objects.get(pk=music_pk)
-            except Music.DoesNotExist as e:
-                content = {
-                    "detail": "Wrong Music",
-                }
-                return Response(content, status=status.HTTP_404_NOT_FOUND)
-            else:
-                pl.add_music(music=music)
-                pl.make_id()
+        except Music.DoesNotExist as e:
+            context = {
+                "detail": "Music Does not exist",
+            }
+            return Response(context, status=status.HTTP_404_NOT_FOUND)
+        except Playlist.DoesNotExist as e:
+            # 이것도 일어나지는 않을듯
+            context = {
+                "detail": "Enter Playlist Name",
+            }
+            return Response(context, status=status.HTTP_400_BAD_REQUEST)
 
         serializer_class = self.get_serializer_class()
         serializer = serializer_class(user)
@@ -154,6 +155,45 @@ class UserMusiclistRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
             "data": serializer.data,
         }
         return Response(context, status=status.HTTP_202_ACCEPTED)
+
+    # Playlist 삭제
+    def put(self, request, *args, **kwargs):
+        delete_playlists = request.data.get("delete_playlist", None)
+        if not delete_playlists:
+            context = {
+                "detail": "Enter Playlist"
+            }
+            return Response(context, status=status.HTTP_404_NOT_FOUND)
+        try:
+            user = self.get_queryset().get(pk=kwargs["pk"])
+        except User.DoesNotExist as e:
+            context = {
+                "detail": "User does not exist",
+            }
+            return Response(context, status=status.HTTP_404_NOT_FOUND)
+
+        if delete_playlists:  # 리스트 삭제
+            delete_playlists = [playlist.strip() for playlist in delete_playlists.split(",") if playlist]
+            for playlist in delete_playlists:
+                try:
+                    Playlist.objects.get(pk=playlist).delete()
+                except Playlist.DoesNotExist as e:
+                    context = {
+                        "detail": "PlayList Does Not Exist",
+                    }
+                    return Response(context, status=status.HTTP_404_NOT_FOUND)
+                except Exception as e:
+                    context = {
+                        "detail": e,
+                    }
+                return Response(context, status=status.HTTP_404_NOT_FOUND)
+            Playlist.objects.make_playlist_id()
+            context = {
+                "detail": "List Delete Success",
+                "list deleted": delete_playlists,
+            }
+
+            return Response(context, status=status.HTTP_202_ACCEPTED)
 
 
 # 개인 플레이리스트 디테일
@@ -191,34 +231,32 @@ class UserPlayListMusicsRetrieveDestroy(generics.RetrieveUpdateDestroyAPIView):
 
     # Playlist 음악 삭제
     def put(self, request, *args, **kwargs):
-        permission_classes = [
-            ObjectHasPermission,
-        ]
-        music_deleteds = request.data.get("music", None)
-        if music_deleteds:
+        deleted_musics = request.data.get("music", None)
+        if deleted_musics:
             try:
                 # 삭제되던 중간에 에러 발생시의 처리?
-                music_deleteds = music_deleteds.split(",")
+                deleted_musics = [musics.strip() for musics in deleted_musics.split(",") if musics]
                 pk = kwargs["pk"]
-                playlist_pk = kwargs["playlist_pk"]
+                playlist_pk = kwargs["playlist_pk"] # TODO id를 받는데 변수명은 pk 고치자
                 playlist = Playlist.objects.prefetch_related("user").get(
                     user_id=pk, playlist_id=playlist_pk)
-                for music_deleted in music_deleteds:
-                    music_deleted = music_deleted.strip()
-
+                for music_deleted in deleted_musics:
                     music = playlist.playlist_musics.filter(pk=music_deleted)
-                    PlaylistMusics.objects.filter(
+                    PlaylistMusics.objects.select_related("name_playlist").select_related("music").filter(
                         name_playlist__playlist_id=playlist_pk,
                         music=music,
                     ).delete()
-
-                    if music_deleted:
-                        music_deleted = music_deleted.strip()
-                        music = playlist.playlist_musics.filter(pk=music_deleted)
-                        PlaylistMusics.objects.filter(
-                            name_playlist__playlist_id=playlist_pk,
-                            music=music,
-                        ).delete()
+                    # PlaylistMusics.objects.filter(
+                    #     name_playlist__playlist_id=playlist_pk,
+                    #     music=music,
+                    # ).delete()
+                    # if music_deleted:
+                    #     music_deleted = music_deleted.strip()
+                    #     music = playlist.playlist_musics.filter(pk=music_deleted)
+                    #     PlaylistMusics.objects.filter(
+                    #         name_playlist__playlist_id=playlist_pk,
+                    #         music=music,
+                    #     ).delete()
             except Playlist.DoesNotExist as e:
                 context = {
                     "detail": "Playlist does not exsits",
