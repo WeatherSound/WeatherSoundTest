@@ -288,17 +288,15 @@ class PlaylistManager(models.Manager):
            추천리스트 생성, 1시간 단위
         :return:
         """
-        play_lists = self.select_related("user").filter(user_id=1)  # TODO 필터 조건을 좀더 정교하게
+        play_lists = self.select_related("user").first()  # TODO 필터 조건을 좀더 정교하게
         for play_list in play_lists:
             if len(play_list.playlist_musics.all()) < 20:  # 모종의 사건으로 메인리스트 음악 유실시
                 musics = Music.objects.all().order_by("-" + play_list.name_playlist)[:20]
-                # play_list.playlist_musics.all().delete()
                 PlaylistMusics.objects.select_related("name_playlist").filter(
                     name_playlist=play_list).delete()
                 play_list.add_musics(musics=musics)
             if (timezone.now() - play_list.date_added).seconds >= 3600:  # 업데이트된지 시간이 1시간이 지났을시
                 musics = Music.objects.all().order_by("-" + play_list.name_playlist)[:20]
-                # play_list.playlist_musics.all().delete()
                 PlaylistMusics.objects.select_related("name_playlist").filter(
                     name_playlist=play_list).delete()
                 play_list.add_musics(musics=musics)

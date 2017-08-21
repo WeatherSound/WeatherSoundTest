@@ -69,12 +69,13 @@ class MainPlaylistListView(generics.ListAPIView):
             try:
                 float(latitude), float(longitude)  # 입력 string이 float형이 아니면 예외처리
                 weather = Weather.object.create_or_update_weather(latitude, longitude)
-                Playlist.objects.create_main_list()
-                # Playlist.objects.make_weather_recommand_list()
+                Playlist.objects.create_main_list()  # main list check목적
                 queryset = self.queryset.get(name_playlist=weather.current_weather)
-            except  Exception as e:
-                pass
-            # 아마 일어날일이 없을듯
+            except Exception as e:
+                content = {
+                    "detail": "Enter correct Latitude and Longitude",
+                }
+                return Response(content, status.HTTP_400_BAD_REQUEST)
             else:
                 # 예외 처리가 일어나지 않으면 정상 작동처리
                 serializer = self.serializer_class(queryset)
@@ -86,15 +87,11 @@ class MainPlaylistListView(generics.ListAPIView):
                     "listInfo": serializer.data,
                 }
                 return Response(content, status.HTTP_202_ACCEPTED)
-        content = {
-            "detail": "Enter correct Latitude and Longitude",
-        }
-        return Response(content, status.HTTP_400_BAD_REQUEST)
 
 
 # User의 모든 playlists
 class UserMusiclistRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
-    queryset = User.objects.all()
+    queryset = User.objects.prefetch_related("playlists").all()
     serializer_class = UserPlaylistSerializer
     permission_classes = (  # TODO 퍼미션 체크 확실히
         permissions.IsAuthenticated,
