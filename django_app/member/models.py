@@ -1,7 +1,11 @@
+import re
+
+import requests
 from django.contrib.auth import models as auth_models, get_user_model
 from django.contrib.auth.base_user import BaseUserManager
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager as DjangoUserManager
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager as DjangoUserManager, UserManager
 from django.core.exceptions import ValidationError
+from django.core.files.temp import NamedTemporaryFile
 from django.core.mail import send_mail
 from django.core.validators import validate_email
 from django.db import models
@@ -17,12 +21,13 @@ __all__ = (
 
 
 class MyUserManager(BaseUserManager):
-    def create_user(self, username, nickname, password=None, **extra_fields):
+    def create_user(self, username, nickname, email=None, password=None, **extra_fields):
         try:
-            validate_email(username)
             user = self.model(
+                user_type=User.USER_TYPE_DJANGO,
                 username=self.normalize_email(username),
                 nickname=nickname,
+                email=email if email else ''
             )
             extra_fields.setdefault('is_staff', False)
             extra_fields.setdefault('is_superuser', False)
@@ -36,8 +41,8 @@ class MyUserManager(BaseUserManager):
 
     def create_superuser(self, username, nickname, password=None, **extra_fields):
         try:
-            validate_email(username)
             user = self.create_user(
+                user_type=User.USER_TYPE_DJANGO,
                 username=username,
                 nickname=nickname,
                 password=password,
@@ -50,15 +55,37 @@ class MyUserManager(BaseUserManager):
         except ValidationError:
             raise ValidationError("이메일 양식이 올바르지 않습니다.")
 
-
-class FacebookUserManager(DjangoUserManager):
-    def create_facebook_user(self, user_info):
-        return self.create_user(
+    # 페이스북 유저정보가 있으면 가져오거나 없으면 생성
+    def get_or_create_facebook_user(self, user_info):
+        fb_user, user_created = self.get_or_create(
+            user_type=User.USER_TYPE_FACEBOOK,
             username=user_info['id'],
-            first_name=user_info['first_name', ''],
-            last_name=user_info['last_name', ''],
-            user_types=User.USER_TYPE_FACEBOOK
+            nickname=user_info['first_name'],
+            email='',
         )
+
+        # 유저가 생성된 경우 페이스북의 프로필 이미지를 가져온다.
+        if user_created and user_info.get('picture'):
+            url_profile = user_info['picture']['data']['url']
+
+            # 이미지 확장자를 가져오는 정규표현식
+            p = re.compile(r'.*\.([^?]+)')
+            # 받아온 url_profile을 정규표현식에 일치하는 패턴으로 검사하여 값을 찾는다.
+            img_ext = re.search(p, url_profile).group(1)
+            img_name = '{}.{}'.format(
+                fb_user.pk,
+                img_ext
+            )
+            # 이미지 파일을 임시로 저장할 파일 객체를 할당
+            temp_file = NamedTemporaryFile()
+            # 이미지를 다운로드함
+            response = requests.get(url_profile)
+            # 임시 파일객체에 다운로드한 이미지를 기록
+            temp_file.write(response.content)
+            # 페이스북 유저의 이미지를 주어진 이름으로 저장
+            fb_user.img_profile.save('fb_profile_{}'.format(
+                img_name), temp_file)
+            return fb_user
 
 
 # 사용자 정보 모델
@@ -91,6 +118,12 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
         blank=True,
         default='member/basic_profile.png'
     )
+    email = models.EmailField(
+        default='',
+        null=True,
+        blank=True,
+    )
+    is_staff = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(
         _('active'),
@@ -101,7 +134,7 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     objects = MyUserManager()
 
     # Facebook user 생성용 매니저
-    objects_fb = FacebookUserManager()
+    # objects_fb = FacebookUserManager()
 
     EMAIL_FIELD = 'username'
     USERNAME_FIELD = 'username'

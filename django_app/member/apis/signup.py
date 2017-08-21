@@ -47,7 +47,7 @@ class UserSignupView(generics.ListCreateAPIView):
     """
     permission_classes = (AllowAny,)
     queryset = User.objects.all().order_by('pk')
-    parser_classes = (MultiPartParser, FormParser,)  # add
+    parser_classes = (MultiPartParser, FormParser)  # add
     pagination_class = None
 
     def get_serializer_class(self):

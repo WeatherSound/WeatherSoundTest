@@ -2,7 +2,7 @@
 from .base import *
 
 # TODO requirements의 deploy에 django_extensions 삭제하도록
-# deploy file settings
+# deploy file setting
 config_secret_deploy = json.loads(open(CONFIG_SECRET_DEPLOY_FILE).read())
 
 WSGI_APPLICATION = 'config.wsgi.deploy.application'

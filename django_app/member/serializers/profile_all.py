@@ -84,15 +84,7 @@ class UserRetrieveUpdateDestroySerializers(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         print('instance.nick1;;;;', instance.nickname)
-        # instance.nickname = validated_data.get(
-        #     'nickname',
-        #     instance.nickname
-        # )
         print('instance.nick2;;;;', instance.nickname)
-        # instance.img_profile = validated_data.get(
-        #     'img_profile',
-        #     instance.img_profile
-        # )
-        print('instance.img_profile;;;;', instance.nickname)
+        print('instance.img_profile;;;;', instance.img_profile)
         instance.save()
         return instance

@@ -101,6 +101,7 @@ class WeatherManager(models.Manager):
                                                   SECRET_KEY=settings.GOOGLE_API_KEY,
                                                   result_type="sublocality", )
 
+        # TODO 날씨 구단위로
         return requests.get(url).json()["results"][2]["formatted_address"]
 
     def _get_weather_info(self, latitude, longitude):
@@ -224,6 +225,7 @@ class Music(models.Model):
             self.snowy += 1
         else:
             print("Wrong weather")
+        self.save()
 
     def __str__(self):
         return self.name_music
@@ -257,20 +259,50 @@ class Weather(models.Model):
 
 
 class PlaylistManager(models.Manager):
+    def make_playlist_id(self):
+        users = User.objects.all()
+        for user in users:
+            playlists = Playlist.objects.filter(user=user).order_by("pk")
+            for i, playlist in enumerate(playlists):
+                playlist.playlist_id = i + 1
+                playlist.save()
+
     def make_weather_recommand_list(self, **kwargs):
-        play_lists = self.filter(user_id=1)
+        """
+           추천리스트 생성, 1시간 단위
+        :return:
+        """
+        play_lists = self.filter(user_id=1)  # TODO 필터 조건을 좀더 정교하게
         for play_list in play_lists:
-            musics = Music.objects.all().order_by("-" + play_list.weather)[:20]
-            play_list.add_musics(musics=musics)
+            if not len(play_list.playlist_musics.all()):  # 모종의 사건으로 메인리스트 음악 유실시
+                musics = Music.objects.all().order_by("-" + play_list.weather)[:20]
+                play_list.playlist_musics.all().delete()
+                play_list.add_musics(musics=musics)
+            if (timezone.now() - play_list.date_added).seconds >= 3600:  # 업데이트된지 시간이 1시간이 지났을시
+                musics = Music.objects.all().order_by("-" + play_list.weather)[:20]
+                play_list.playlist_musics.all().delete()
+                play_list.add_musics(musics=musics)
 
     def create_main_list(self, ):
+        """
+            최초 메인 추천리스트 생성
+        :return: 추천리스트 5개
+        """
         admin = User.objects.get(pk=1)  # filter is_superuser true?
 
+        if len(self.filter(user=admin)) > 4:
+            return self.all()[:4]
+
         sunny, _ = self.get_or_create(user=admin, name_playlist="sunny", weather="sunny")
+        sunny.make_id()
         foggy, _ = self.get_or_create(user=admin, name_playlist="foggy", weather="foggy")
+        foggy.make_id()
         rainy, _ = self.get_or_create(user=admin, name_playlist="rainy", weather="rainy")
+        rainy.make_id()
         cloudy, _ = self.get_or_create(user=admin, name_playlist="cloudy", weather="cloudy")
+        cloudy.make_id()
         snowy, _ = self.get_or_create(user=admin, name_playlist="snowy", weather="snowy")
+        snowy.make_id()
         self.make_weather_recommand_list()
 
         return sunny, foggy, rainy, cloudy, snowy
@@ -281,6 +313,7 @@ class Playlist(models.Model):
     objects = PlaylistManager()
     user = models.ForeignKey(
         User,
+        related_name="playlists",
         on_delete=models.CASCADE
     )
     name_playlist = models.CharField(
@@ -294,8 +327,23 @@ class Playlist(models.Model):
     playlist_musics = models.ManyToManyField(
         'Music',
         through='PlaylistMusics',
-        related_name='playlist_musics'
+        related_name='playlist_musics',
     )
+    playlist_id = models.PositiveSmallIntegerField(
+        default=0,
+    )
+    # main list용
+    # 이 시간 마지막이 1시간이 넘으면 add
+    date_added = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("user", "name_playlist")
+
+    # TODO 임시방편 manager에 넣는게 좋을듯, filter시 id최대값 +1로 변경
+    def make_id(self):
+        self.playlist_id = len(Playlist.objects.filter(user=self.user))
+        self.save()
+        return self.playlist_id
 
     @property
     def make_list_attribute_weather(self):
@@ -312,7 +360,10 @@ class Playlist(models.Model):
             snowy=Sum("snowy"),
 
         )
-        return max(results, key=lambda i: results[i])
+        try:
+            return max(results, key=lambda i: results[i])
+        except Exception as e:
+            return "빈 리스트"
 
     def add_music(self, music):
         # TODO 아마 사용은 주소로 들어올테니 music 객체를 찾도록 추후 수정
@@ -322,7 +373,7 @@ class Playlist(models.Model):
         :return:
         """
         self.playlistmusics_set.create(music=music)
-        self.weather = self.make_list_attribute_weather()
+        self.weather = self.make_list_attribute_weather
         music.add_weather(self.weather)
         self.save()
         return self
@@ -330,7 +381,7 @@ class Playlist(models.Model):
     def add_musics(self, musics):
         for music in musics:
             self.playlistmusics_set.create(music=music)
-        self.weather = self.make_list_attribute_weather()
+        self.weather = self.make_list_attribute_weather
         music.add_weather(self.weather)
         self.save()
 
@@ -348,6 +399,7 @@ class PlaylistMusics(models.Model):
         on_delete=models.CASCADE)
     music = models.ForeignKey(
         'Music',
+        related_name="musics",
         on_delete=models.CASCADE)
     date_added = models.DateTimeField(auto_now_add=True)
 
