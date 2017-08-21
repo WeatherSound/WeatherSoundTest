@@ -267,16 +267,6 @@ class Weather(models.Model):
 
 
 class PlaylistManager(models.Manager):
-    def make_playlist_id(self):
-        users = User.objects.prefetch_related("playlists").all()
-        for user in users:
-            # playlists = Playlist.objects.prefetch_related("user").filter(user=user).order_by("pk")
-            playlists = user.playlists.all()
-            for i, playlist in enumerate(playlists):
-                playlist.make_weather()
-                playlist.playlist_id = i + 1
-                playlist.save()
-
     def make_playlist_weather(self):
         # list의 날씨만들기
         playlists = Playlist.objects.all()
@@ -288,20 +278,19 @@ class PlaylistManager(models.Manager):
            추천리스트 생성, 1시간 단위
         :return:
         """
-        play_lists = self.select_related("user").filter(user_id=1)  # TODO 필터 조건을 좀더 정교하게
+        play_lists = self.select_related("user").first()  # TODO 필터 조건을 좀더 정교하게
         for play_list in play_lists:
             if len(play_list.playlist_musics.all()) < 20:  # 모종의 사건으로 메인리스트 음악 유실시
                 musics = Music.objects.all().order_by("-" + play_list.name_playlist)[:20]
-                # play_list.playlist_musics.all().delete()
                 PlaylistMusics.objects.select_related("name_playlist").filter(
                     name_playlist=play_list).delete()
                 play_list.add_musics(musics=musics)
             if (timezone.now() - play_list.date_added).seconds >= 3600:  # 업데이트된지 시간이 1시간이 지났을시
                 musics = Music.objects.all().order_by("-" + play_list.name_playlist)[:20]
-                # play_list.playlist_musics.all().delete()
                 PlaylistMusics.objects.select_related("name_playlist").filter(
                     name_playlist=play_list).delete()
                 play_list.add_musics(musics=musics)
+            #### IDIDIDIDIDIDIDIDI
             self.make_playlist_id()
 
     def create_main_list(self, ):
@@ -330,6 +319,17 @@ class PlaylistManager(models.Manager):
         self.make_playlist_id()
 
         return sunny, foggy, rainy, cloudy, snowy
+
+    def delete_playlists(self, pks):
+        try:
+            for pk in pks:
+                self.get(pk=pk).delete()
+        except Playlist.DoesNotExist as e:
+            raise e
+        except ValueError as e:
+            raise e
+        else:
+            return True
 
 
 # 유저별 플레이리스트 모델
@@ -424,6 +424,26 @@ class Playlist(models.Model):
         self.save()
 
         return self
+
+    def add_musics_string(self, musics_pk):
+        try:
+            for music_pk in musics_pk:
+                music = Music.objects.get(pk=music_pk)  # music find
+                self.add_music(music=music)
+        except Music.DoesNotExist as e:
+            raise e
+        else:
+            return self
+
+    def delete_musics_string(self, musics_pk):
+        try:
+            for music_pk in musics_pk:
+                music = Music.objects.get(pk=music_pk)  # music find
+                PlaylistMusics.objects.filter(name_playlist=self, music=music).delete()
+        except Music.DoesNotExist as e:
+            raise e
+        else:
+            return self
 
     def __str__(self):
         return '{}의 {}'.format(
