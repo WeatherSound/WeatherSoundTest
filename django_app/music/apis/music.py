@@ -17,7 +17,6 @@ __all__ = (
     "MainPlaylistListView",
     "UserMusiclistRetrieveUpdateDestroy",
     "UserSharedListUpdate",
-
 )
 
 User = get_user_model()
@@ -287,7 +286,7 @@ class UserSharedListUpdate(generics.RetrieveUpdateDestroyAPIView):
             user__pk=kwargs["pk"],
         )
         context = {
-            # "Shared List": self.serializer_class(shared_list).data,
+            "Shared List": self.serializer_class(shared_list, many=True).data,
         }
         return Response(context, status=status.HTTP_200_OK)
 

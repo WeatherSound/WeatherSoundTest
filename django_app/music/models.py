@@ -467,7 +467,7 @@ class Playlist(models.Model):
 
     def __str__(self):
         return '{}의 {}'.format(
-            self.userㅈ,
+            self.user,
             self.name_playlist)  # 유저의 플레이리스트 내 음악 목록 모델
 
 
