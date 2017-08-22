@@ -301,12 +301,19 @@ class PlaylistManager(models.Manager):
         ]
         admin = User.objects.filter(is_superuser=True).first()
         self.select_related("user").filter(user=admin).delete()
+        print("deleted")
 
         sunny, _ = self.get_or_create(user=admin, name_playlist="sunny", weather="sunny")
         foggy, _ = self.get_or_create(user=admin, name_playlist="foggy", weather="foggy")
         rainy, _ = self.get_or_create(user=admin, name_playlist="rainy", weather="rainy")
         cloudy, _ = self.get_or_create(user=admin, name_playlist="cloudy", weather="cloudy")
         snowy, _ = self.get_or_create(user=admin, name_playlist="snowy", weather="snowy")
+
+        sunny.toggle_shared(True)
+        foggy.toggle_shared(True)
+        rainy.toggle_shared(True)
+        cloudy.toggle_shared(True)
+        snowy.toggle_shared(True)
         self.make_weather_recommand_list()
 
         return sunny, foggy, rainy, cloudy, snowy
@@ -350,6 +357,9 @@ class Playlist(models.Model):
     )
     playlist_id = models.PositiveSmallIntegerField(
         default=0,  # 삭제예정
+    )
+    is_shared_list = models.BooleanField(
+        default=False,
     )
     # main list용
     # 이 시간 마지막이 1시간이 넘으면 add
@@ -449,6 +459,11 @@ class Playlist(models.Model):
             raise e
         else:
             return self
+
+    def toggle_shared(self, status=None):
+        self.is_shared_list = status if status else not self.is_shared_list
+        self.save()
+        return self.is_shared_list
 
     def __str__(self):
         return '{}의 {}'.format(

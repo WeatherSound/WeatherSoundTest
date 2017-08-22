@@ -50,7 +50,10 @@ urlpatterns = [
         music.UserPlayListMusicsRetrieveDestroy.as_view(),
         name="playlist_detail",
         ),
-
+    url(r"^(?P<pk>\d+)/sharedlists/$",
+        music.UserSharedListUpdate.as_view(),
+        name="shared_lists",
+        ),
     url(r'^$',
         apis.UserListView.as_view(),
         name='userlist'
