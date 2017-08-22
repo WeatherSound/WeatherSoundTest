@@ -6,7 +6,8 @@ from rest_framework.views import APIView
 
 from music.models import Music, Playlist, Weather
 from music.permissions import IsOwnerOrReadOnly
-from music.serializers import MusicSerializer, PlaylistSerializer, UserPlaylistSerializer, MainPlaylistSerializer
+from music.serializers import MusicSerializer, PlaylistSerializer, UserPlaylistSerializer, MainPlaylistSerializer, \
+    UserSharedPlaylistSerializer
 from permissions import ObjectHasPermission, ObjectIsRequestUser
 
 __all__ = (
@@ -15,6 +16,7 @@ __all__ = (
     "PlaylistListCreateView",
     "MainPlaylistListView",
     "UserMusiclistRetrieveUpdateDestroy",
+    "UserSharedListUpdate",
 
 )
 
@@ -122,8 +124,9 @@ class UserMusiclistRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
             user = self.get_queryset().get(pk=kwargs["pk"])  # user find
             pl, pl_created = Playlist.objects.get_or_create(user=user, name_playlist=pl_name)  # pl create or find
             music_pks = request.data.get("music", None)  # get music  pk
-            music_pks = [pk.strip() for pk in music_pks.split(",") if pk]
-            pl.add_musics_string(music_pks)
+            if music_pks:
+                music_pks = [pk.strip() for pk in music_pks.split(",") if pk]
+                pl.add_musics_string(music_pks)
         except User.DoesNotExist as e:
             context = {
                 "detail": "User Does not exist",
@@ -140,11 +143,12 @@ class UserMusiclistRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
             }
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer_class = self.get_serializer_class()
-        serializer = serializer_class(user)
+        # user = User.objects.get(pk=user)
+        # serializer_class = self.get_serializer_class()
+        serializer = PlaylistSerializer(pl)
         context = {
             "detail": "Created",
-            "data": serializer.data,
+            "lists": serializer.data,
         }
         return Response(context, status=status.HTTP_202_ACCEPTED)
 
@@ -271,3 +275,20 @@ class PlaylistListCreateView(APIView):
         playlists = Playlist.objects.all()
         serializer = PlaylistSerializer(playlists, many=True)
         return Response(serializer.data)
+
+
+class UserSharedListUpdate(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Playlist.objects.select_related("user").all()
+    serializer_class = UserSharedPlaylistSerializer
+
+    def get(self, request, *args, **kwargs):
+        shared_list = self.get_queryset().filter(
+            is_shared_list=True,
+            user__pk=kwargs["pk"],
+        )
+        context = {
+            # "Shared List": self.serializer_class(shared_list).data,
+        }
+        return Response(context, status=status.HTTP_200_OK)
+
+    pass
