@@ -51,6 +51,7 @@ class MainPlaylistListView(generics.ListAPIView):
     """
     queryset = Playlist.objects.select_related("user").prefetch_related(
         "playlist_musics").filter(user=User.objects.filter(is_superuser=True).first())  # 첫번째 유저가 admin이라는 전제하에
+    # queryset = Playlist.objects.all().filter(user=User.objects.filter(is_superuser=True).first())
     serializer_class = MainPlaylistSerializer
 
     def get(self, request, *args, **kwargs):  # 5가지 날씨의 추천리스트를 보여준다
