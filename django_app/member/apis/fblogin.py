@@ -1,6 +1,6 @@
 import requests
 from django.contrib.auth import get_user_model
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
@@ -115,4 +115,3 @@ class FacebookLoginAPIView(APIView):
         response = requests.get(url_user_info, params=url_user_info_params)
         result = response.json()
         return result
-

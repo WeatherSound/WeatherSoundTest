@@ -70,9 +70,9 @@ class MainPlaylistListView(generics.ListAPIView):
                 float(latitude), float(longitude)  # 입력 string이 float형이 아니면 예외처리
                 weather = Weather.object.create_or_update_weather(latitude, longitude)
                 Playlist.objects.create_main_list()
-                # Playlist.objects.make_weather_recommand_list()
+                # Playlist.objects.make_weather_recommend_list()
                 queryset = self.queryset.get(name_playlist=weather.current_weather)
-            except  Exception as e:
+            except Exception as e:
                 pass
             # 아마 일어날일이 없을듯
             else:
@@ -98,8 +98,7 @@ class UserMusiclistRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
     serializer_class = UserPlaylistSerializer
     permission_classes = (  # TODO 퍼미션 체크 확실히
         permissions.IsAuthenticated,
-        # ObjectHasPermission,
-        # ObjectIsRequestUser,
+        ObjectHasPermission,
     )
 
     # 개인이 가진 모든 플레이 리스트
