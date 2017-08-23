@@ -13,10 +13,59 @@ __all__ = (
     'Music',
     'Weather',
     'Playlist',
+    "SharedPlayLists",
     'PlaylistMusics',
 )
 
 User = get_user_model()
+
+
+# # 전체 음악파일/정보 모델
+# class Music(models.Model):
+#     # album image 저장용
+#     # TODO artist || nameMusic으로 index생성 고려
+#     # img_music = models.ImageField(upload_to='img_music', blank=True)
+#     img_music = models.CharField(
+#         max_length=256,
+#         null=False,
+#         blank=False,
+#     )
+#     # file_music = models.FileField(upload_to='music')
+#     time_music = models.PositiveSmallIntegerField(
+#         default=0,
+#     )
+#     source_music = models.CharField(  # 음악 파일 저장된 위치 주소 리턴
+#         max_length=256,
+#         null=False,
+#         blank=False,
+#         # unique=True,
+#     )
+#     name_music = models.CharField(
+#         max_length=100,
+#     )
+#     name_artist = models.CharField(
+#         max_length=100,
+#     )
+#     name_album = models.CharField(
+#         max_length=100,
+#         blank=True,
+#     )
+#     lyrics = models.TextField(
+#         blank=True,
+#     )
+#     sunny = models.PositiveIntegerField(
+#         verbose_name='맑음', default=0)
+#     foggy = models.PositiveIntegerField(
+#         verbose_name='안개', default=0)
+#     rainy = models.PositiveIntegerField(
+#         verbose_name='비', default=0)
+#     cloudy = models.PositiveIntegerField(
+#         verbose_name='흐림', default=0)
+#     snowy = models.PositiveIntegerField(
+#         verbose_name='눈', default=0)
+#
+#     def __str__(self):
+#         return self.name_music
 
 
 # TODO 잘못된 좌표가 들어왓을 떄의 처리
