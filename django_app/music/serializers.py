@@ -100,6 +100,7 @@ class PlaylistSerializer(serializers.ModelSerializer):
             "pk",
             "name_playlist",
             "weather",
+            "is_shared_list",
             "playlist_id",
             "playlist_musics",
             "music",
@@ -156,3 +157,19 @@ class UserPlaylistSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'name_playlist': {'write_only': True},
         }
+
+
+class UserSharedPlaylistSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Playlist
+        fields = (
+            "user",
+            "name_playlist",
+            "weather",
+            "playlist_musics",
+        )
+        read_only_fields = (
+            "user",
+            "name_playlist",
+            "weather",
+        )
