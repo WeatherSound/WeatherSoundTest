@@ -40,6 +40,7 @@ urlpatterns = [
     url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
         apis.AccountActivationView.as_view(),
         name='activate'),
+
     ##############
     # Music urls #
     ##############
@@ -50,7 +51,10 @@ urlpatterns = [
         music.UserPlayListMusicsRetrieveDestroy.as_view(),
         name="playlist_detail",
         ),
-
+    url(r"^(?P<pk>\d+)/sharedlists/$",
+        music.UserSharedListUpdate.as_view(),
+        name="shared_lists",
+        ),
     url(r'^$',
         apis.UserListView.as_view(),
         name='userlist'

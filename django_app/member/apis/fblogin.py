@@ -1,6 +1,6 @@
 import requests
 from django.contrib.auth import get_user_model
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
@@ -30,7 +30,7 @@ class TokenUserInfoAPIView(APIView):
             'token': token,
             'userInfo': user_serializer.data,
         }
-        return Response(content, status=status.HTTP_202_ACCEPTED)
+        return Response(content, status=status.HTTP_200_OK)
 
 
 class FacebookLoginAPIView(APIView):
@@ -67,7 +67,7 @@ class FacebookLoginAPIView(APIView):
             'token': token.key,
             'userInfo': user_serializer.data,
         }
-        return Response(content, status=status.HTTP_202_ACCEPTED)
+        return Response(content, status=status.HTTP_200_OK)
 
     def debug_token(self, token):
         """
@@ -115,4 +115,3 @@ class FacebookLoginAPIView(APIView):
         response = requests.get(url_user_info, params=url_user_info_params)
         result = response.json()
         return result
-

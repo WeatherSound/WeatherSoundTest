@@ -63,24 +63,25 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
                 # 프로필 이미지 저장(수정하지 않으면 본래값)
                 update_info.img_profile = user.img_profile if not request.data.get(
                     'img_profile', default=None) else request.data.get('img_profile')
-                print('유저 저장')
+                # 유저 저장
 
                 user_serializer = UserListSerializers(update_info, partial=True)
                 content = {
                     'detail': "회원정보가 변경되었습니다. 재로그인해주세요.",
                     'userInfo': user_serializer.data,
                 }
-                return Response(content, status=status.HTTP_202_ACCEPTED)
+                return Response(content, status=status.HTTP_200_OK)
             # 기존 비밀번호가 일치하지 않는 경우 - 400 예외처리
             else:
                 content = {
                     "detail": "기존 비밀번호가 일치하지 않습니다.",
                 }
-                print('비번 안맞아서 400 에러 발생')
+                # 비번 안맞아서 400 에러 발생
                 return Response(
                     content,
                     status=status.HTTP_400_BAD_REQUEST
                 )
+
         # (2) 비밀번호 파람을 입력했는데 이중 하나라도 없는 경우
         elif request.data.get('password', default=None) or request.data.get(
                 'new_password1', None) or request.data.get('new_password2', None):
@@ -88,6 +89,7 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
                 "detail": "비밀번호를 변경하시려면 필드를 모두 입력해주십시오."
             }
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
         # (3) 비밀번호 값이 하나도 없을 경우(닉네임과 이미지만 변경하는 경우)
         else:
             serializer.is_valid(raise_exception=True)
@@ -103,6 +105,7 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
             # 프로필 이미지 저장(수정하지 않으면 본래값)
             update_info.img_profile = user.img_profile if not request.data.get(
                 'img_profile', default=None) else request.data.get('img_profile')
+
             # 저장
             update_info.save()
             user_serializer = UserListSerializers(update_info, partial=True)
@@ -112,14 +115,21 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
             }
             return Response(
                 content,
-                status=status.HTTP_202_ACCEPTED
+                status=status.HTTP_200_OK
             )
 
     def delete(self, request, *args, **kwargs):
         # 삭제 후 response를 오버라이드하여 메세지 보냄
+        # if request.user.user_type == User.USER_TYPE_FACEBOOK:
+        #     request.user.auth_token.delete()
+        #     request.user.delete()
+        #     content = {
+        #         "detail": "소셜 계정이 삭제되었습니다."
+        #     }
+        #     return Response(content, status=status.HTTP_202_ACCEPTED)
         content = {
             "detail": "계정이 삭제되었습니다."
         }
         super().destroy(self, request, *args, **kwargs)
-        return Response(content, status=status.HTTP_202_ACCEPTED)
+        return Response(content, status=status.HTTP_200_OK)
 

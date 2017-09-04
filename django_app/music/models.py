@@ -95,14 +95,21 @@ class WeatherManager(models.Manager):
         url = "https://maps.googleapis.com/maps/api/geocode/json" \
               "?latlng={LATITUDE},{LONGITUDE}" \
               "&key={SECRET_KEY}" \
-              "&language=ko" \
-              "&result_type={result_type}".format(LATITUDE=latitude,
-                                                  LONGITUDE=longitude,
-                                                  SECRET_KEY=settings.GOOGLE_API_KEY,
-                                                  result_type="sublocality", )
+              "&language=ko".format(LATITUDE=latitude,
+                                    LONGITUDE=longitude,
+                                    SECRET_KEY=settings.GOOGLE_API_KEY, )
 
         # TODO 날씨 구단위로
-        return requests.get(url).json()["results"][2]["formatted_address"]
+        data = requests.get(url).json()
+        try:
+            addr = data["results"]
+            if len(addr) > 6:
+                location = addr[5]["formatted_address"]
+            else:
+                location = addr[0]["formatted_address"]
+        except Exception as e:
+            location = "Fantasy"
+        return location
 
     def _get_weather_info(self, latitude, longitude):
         url = "https://api.darksky.net/forecast/" \
@@ -112,7 +119,7 @@ class WeatherManager(models.Manager):
                                               LONGITUDE=longitude, )
         data = requests.get(url=url).json()
         current_weather = self.weather_dict[data["currently"]["icon"]]
-        temperature = data["currently"]["temperature"]
+        temperature = round((data["currently"]["temperature"] - 32) / 1.8, 2)
         return current_weather, temperature
 
     def create_or_update_weather(self, latitude, longitude):
@@ -145,6 +152,7 @@ class MusicManager(models.Manager):
         return self.order_by("-" + weather)[:12]
 
     def create_dummy(self, song_name):
+        # for Test
         a = []
         while sum(a) == 0:
             a = [randint(0, 10) for x in range(5)]
@@ -259,28 +267,24 @@ class Weather(models.Model):
 
 
 class PlaylistManager(models.Manager):
-    def make_playlist_id(self):
-        users = User.objects.all()
-        for user in users:
-            playlists = Playlist.objects.filter(user=user).order_by("pk")
-            for i, playlist in enumerate(playlists):
-                playlist.playlist_id = i + 1
-                playlist.save()
+    def make_playlist_weather(self):
+        # list의 날씨만들기
+        playlists = Playlist.objects.all()
+        for playlist in playlists:
+            playlist.make_weather()
 
     def make_weather_recommand_list(self, **kwargs):
         """
            추천리스트 생성, 1시간 단위
         :return:
         """
-        play_lists = self.filter(user_id=1)  # TODO 필터 조건을 좀더 정교하게
+        admin = User.objects.filter(is_superuser=True).first()
+        play_lists = self.select_related("user").filter(user=admin)  # TODO 필터 조건을 좀더 정교하게
         for play_list in play_lists:
-            if not len(play_list.playlist_musics.all()):  # 모종의 사건으로 메인리스트 음악 유실시
-                musics = Music.objects.all().order_by("-" + play_list.weather)[:20]
-                play_list.playlist_musics.all().delete()
-                play_list.add_musics(musics=musics)
-            if (timezone.now() - play_list.date_added).seconds >= 3600:  # 업데이트된지 시간이 1시간이 지났을시
-                musics = Music.objects.all().order_by("-" + play_list.weather)[:20]
-                play_list.playlist_musics.all().delete()
+            if len(play_list.playlist_musics.all()) < 20 or (
+                        timezone.now() - play_list.date_added).seconds >= 3600:  # 모종의 사건으로 메인리스트 음악 유실시
+                PlaylistMusics.objects.select_related("name_playlist").filter(name_playlist=play_list).delete()
+                musics = Music.objects.all().order_by("-" + play_list.name_playlist)[:20]
                 play_list.add_musics(musics=musics)
 
     def create_main_list(self, ):
@@ -288,24 +292,46 @@ class PlaylistManager(models.Manager):
             최초 메인 추천리스트 생성
         :return: 추천리스트 5개
         """
-        admin = User.objects.get(pk=1)  # filter is_superuser true?
-
-        if len(self.filter(user=admin)) > 4:
-            return self.all()[:4]
+        d = [
+            "sunny",
+            "rainy",
+            "snowy",
+            "cloudy",
+            "foggy,",
+        ]
+        admin = User.objects.filter(is_superuser=True).first()
+        self.select_related("user").filter(user=admin).delete()
+        print("deleted")
 
         sunny, _ = self.get_or_create(user=admin, name_playlist="sunny", weather="sunny")
-        sunny.make_id()
         foggy, _ = self.get_or_create(user=admin, name_playlist="foggy", weather="foggy")
-        foggy.make_id()
         rainy, _ = self.get_or_create(user=admin, name_playlist="rainy", weather="rainy")
-        rainy.make_id()
         cloudy, _ = self.get_or_create(user=admin, name_playlist="cloudy", weather="cloudy")
-        cloudy.make_id()
         snowy, _ = self.get_or_create(user=admin, name_playlist="snowy", weather="snowy")
-        snowy.make_id()
+
+        sunny.toggle_shared(True)
+        foggy.toggle_shared(True)
+        rainy.toggle_shared(True)
+        cloudy.toggle_shared(True)
+        snowy.toggle_shared(True)
         self.make_weather_recommand_list()
 
         return sunny, foggy, rainy, cloudy, snowy
+
+    def delete_playlists(self, pks):
+        """
+        :param pks:  플레이리스트의 pk들을 list로 입력받는다
+        :return:
+        """
+        try:
+            for pk in pks:
+                self.get(pk=pk).delete()
+        except Playlist.DoesNotExist as e:
+            raise e
+        except ValueError as e:
+            raise e
+        else:
+            return True
 
 
 # 유저별 플레이리스트 모델
@@ -330,7 +356,10 @@ class Playlist(models.Model):
         related_name='playlist_musics',
     )
     playlist_id = models.PositiveSmallIntegerField(
-        default=0,
+        default=0,  # 삭제예정
+    )
+    is_shared_list = models.BooleanField(
+        default=False,
     )
     # main list용
     # 이 시간 마지막이 1시간이 넘으면 add
@@ -339,12 +368,6 @@ class Playlist(models.Model):
     class Meta:
         unique_together = ("user", "name_playlist")
 
-    # TODO 임시방편 manager에 넣는게 좋을듯, filter시 id최대값 +1로 변경
-    def make_id(self):
-        self.playlist_id = len(Playlist.objects.filter(user=self.user))
-        self.save()
-        return self.playlist_id
-
     @property
     def make_list_attribute_weather(self):
         """
@@ -352,23 +375,31 @@ class Playlist(models.Model):
             우선은 단순히 날씨별 가장 높은 것을 카운트
         :return:
         """
+
         results = self.playlist_musics.aggregate(
             sunny=Sum("sunny"),
             foggy=Sum("foggy"),
             rainy=Sum("rainy"),
             cloudy=Sum("cloudy"),
             snowy=Sum("snowy"),
-
         )
         try:
             return max(results, key=lambda i: results[i])
         except Exception as e:
             return "빈 리스트"
 
+    def make_weather(self):
+        """
+            해당 list의 대표 날씨를 만든다
+        """
+        self.weather = self.make_list_attribute_weather
+        return self.weather
+
     def add_music(self, music):
+
         # TODO 아마 사용은 주소로 들어올테니 music 객체를 찾도록 추후 수정
         """
-            음악을 리스트에 추가하고 weather필드에 날씨 업데이트
+        음악을 리스트에 추가하고 weather필드에 날씨 업데이트
         :param music: 리스트에 들어갈 음악
         :return:
         """
@@ -379,6 +410,11 @@ class Playlist(models.Model):
         return self
 
     def add_musics(self, musics):
+        """
+            여러개의 뮤직을 받아서 리스트에 추가
+        :param musics: 음악 객체
+        :return:
+        """
         for music in musics:
             self.playlistmusics_set.create(music=music)
         self.weather = self.make_list_attribute_weather
@@ -386,6 +422,48 @@ class Playlist(models.Model):
         self.save()
 
         return self
+
+    def add_musics_string(self, musics_pk):
+        """
+            음악 pk를 리스트로 받는다
+        :param musics_pk:
+        :return:
+        """
+        try:
+            for music_pk in musics_pk:
+                music = Music.objects.get(pk=music_pk)  # music find
+                self.add_music(music=music)
+        except Music.DoesNotExist as e:
+            raise e
+        else:
+            return self
+
+    def delete_music(self, music_pk):
+        music = Music.objects.get(pk=music_pk)
+        PlaylistMusics.objects.select_related("music").get(
+            name_playlist=self,
+            music=music,
+        ).delete()
+
+    def delete_musics_string(self, musics_pk):
+        """
+            음악의 pk들을 list로 받는다
+        :param musics_pk:
+        :return:
+        """
+        try:
+            for music_pk in musics_pk:
+                music = Music.objects.get(pk=music_pk)  # music find
+                PlaylistMusics.objects.filter(name_playlist=self, music=music).delete()
+        except Music.DoesNotExist as e:
+            raise e
+        else:
+            return self
+
+    def toggle_shared(self, status=None):
+        self.is_shared_list = status if status else not self.is_shared_list
+        self.save()
+        return self.is_shared_list
 
     def __str__(self):
         return '{}의 {}'.format(
