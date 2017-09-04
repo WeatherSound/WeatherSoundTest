@@ -30,7 +30,7 @@ class UserRetrieveUpdateDestroyView1(generics.RetrieveUpdateDestroyAPIView):
         content = {
             "detail": "계정이 삭제되었습니다."
         }
-        return Response(content, status=status.HTTP_202_ACCEPTED)
+        return Response(content, status=status.HTTP_200_OK)
 
 
 class UserPasswordUpdateView1(generics.RetrieveUpdateAPIView):

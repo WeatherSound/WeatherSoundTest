@@ -30,7 +30,7 @@ class TokenUserInfoAPIView(APIView):
             'token': token,
             'userInfo': user_serializer.data,
         }
-        return Response(content, status=status.HTTP_202_ACCEPTED)
+        return Response(content, status=status.HTTP_200_OK)
 
 
 class FacebookLoginAPIView(APIView):
@@ -67,7 +67,7 @@ class FacebookLoginAPIView(APIView):
             'token': token.key,
             'userInfo': user_serializer.data,
         }
-        return Response(content, status=status.HTTP_202_ACCEPTED)
+        return Response(content, status=status.HTTP_200_OK)
 
     def debug_token(self, token):
         """

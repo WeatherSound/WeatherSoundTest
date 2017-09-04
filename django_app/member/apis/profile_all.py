@@ -70,7 +70,7 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
                     'detail': "회원정보가 변경되었습니다. 재로그인해주세요.",
                     'userInfo': user_serializer.data,
                 }
-                return Response(content, status=status.HTTP_202_ACCEPTED)
+                return Response(content, status=status.HTTP_200_OK)
             # 기존 비밀번호가 일치하지 않는 경우 - 400 예외처리
             else:
                 content = {
@@ -115,7 +115,7 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
             }
             return Response(
                 content,
-                status=status.HTTP_202_ACCEPTED
+                status=status.HTTP_200_OK
             )
 
     def delete(self, request, *args, **kwargs):
@@ -131,5 +131,5 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
             "detail": "계정이 삭제되었습니다."
         }
         super().destroy(self, request, *args, **kwargs)
-        return Response(content, status=status.HTTP_202_ACCEPTED)
+        return Response(content, status=status.HTTP_200_OK)
 

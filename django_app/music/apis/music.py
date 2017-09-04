@@ -3,7 +3,6 @@ from rest_framework import generics, permissions, status
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from music.models import Music, Playlist, Weather
 from music.permissions import IsOwnerOrReadOnly
 from music.serializers import MusicSerializer, PlaylistSerializer, UserPlaylistSerializer, MainPlaylistSerializer, \
@@ -12,7 +11,6 @@ from permissions import ObjectHasPermission, ObjectIsRequestUser
 
 __all__ = (
     'MusicListCreateView',
-    'MusicListView',
     "PlaylistListCreateView",
     "MainPlaylistListView",
     "UserMusiclistRetrieveUpdateDestroy",
@@ -22,20 +20,21 @@ __all__ = (
 User = get_user_model()
 
 
-class MusicListCreateView(APIView):
-    def get(self, request, *args, **kwargs):
-        musics = Music.objects.all()
-        serializer = MusicSerializer(musics, many=True)
-        return Response(serializer.data)
-
-    def post(self, request, *args, **kwargs):
-        pass
-
-
-class MusicListView(generics.ListCreateAPIView):
+class MusicListCreateView(generics.ListCreateAPIView):
+    """
+    GET 요청 : 음악 리스트를 보여준다.
+    """
     queryset = Music.objects.all().order_by('name_album')
     serializer_class = MusicSerializer
     permission_classes = (IsOwnerOrReadOnly,)
+
+    def get(self, request, *args, **kwargs):
+        musics = Music.objects.all()
+        serializer = MusicSerializer(musics, many=True)
+        content = {
+            "musics": serializer.data,
+        }
+        return Response(serializer.data)
 
     def perform_create(self, serializer):
         if self.request.user.is_admin:
@@ -45,15 +44,18 @@ class MusicListView(generics.ListCreateAPIView):
 # main list
 class MainPlaylistListView(generics.ListAPIView):
     """
-        Main Recommander List
-        list : 5가지의 날씨를 다 보여준다
-        post (날씨) : 그 날씨에 맞는 리스트의 곡리스트를 보여준다
+    Main Music Recommend List
+    get : 5가지의 날씨를 다 보여준다
+    post (날씨) : 그 날씨에 맞는 리스트의 곡 리스트를 보여준다
     """
     queryset = Playlist.objects.select_related("user").prefetch_related(
         "playlist_musics").filter(user=User.objects.filter(is_superuser=True).first())  # 첫번째 유저가 admin이라는 전제하에
     serializer_class = MainPlaylistSerializer
 
-    def get(self, request, *args, **kwargs):  # 5가지 날씨의 추천리스트를 보여준다
+    def get(self, request, *args, **kwargs):
+        """
+        5가지 날씨에 다른 추천 음악리스트를 보여준다.
+        """
         Playlist.objects.create_main_list()
         queryset = self.get_queryset()
         serializer = MainPlaylistSerializer(queryset, many=True)
@@ -61,21 +63,23 @@ class MainPlaylistListView(generics.ListAPIView):
 
     def post(self, request, *args, **kwargs):
         """
-            위도와 경도를 입력받아 해당 지역에 맞는 추천리스트를 토한다
-        :return: 5가지 추천리스트 중 1개
+        위도와 경도를 입력받아 해당 지역에 맞는 추천리스트를 보여준다
+        :return: 5가지 추천음악 리스트 중 해당 지역 날씨의 음악 리스트
         """
         latitude = request.data.get("latitude", None)
         longitude = request.data.get("longitude", None)
-        if latitude and longitude:  # 위도 경도 다 입력되었으면
+        # 위도 경도가 모두 입력되었으면
+        if latitude and longitude:
             try:
-                float(latitude), float(longitude)  # 입력 string이 float형이 아니면 예외처리
+                # 입력 string이 float형이 아니면 예외처리
+                float(latitude), float(longitude)
                 weather = Weather.object.create_or_update_weather(latitude, longitude)
                 Playlist.objects.create_main_list()
                 # Playlist.objects.make_weather_recommend_list()
                 queryset = self.queryset.get(name_playlist=weather.current_weather)
             except Exception as e:
                 pass
-            # 아마 일어날일이 없을듯
+            # 아마 일어날일이 없을 듯
             else:
                 # 예외 처리가 일어나지 않으면 정상 작동처리
                 serializer = self.serializer_class(queryset)
@@ -86,9 +90,9 @@ class MainPlaylistListView(generics.ListAPIView):
                     "temperature": weather.temperature,
                     "listInfo": serializer.data,
                 }
-                return Response(content, status.HTTP_202_ACCEPTED)
+                return Response(content, status.HTTP_200_OK)
             content = {
-                "detail": "Enter correct Latitude and Longitude",
+                "detail": "올바른 위도 / 경도를 입력하세요.",
             }
             return Response(content, status.HTTP_400_BAD_REQUEST)
 
@@ -99,7 +103,7 @@ class MainPlaylistListView(generics.ListAPIView):
             queryset = self.queryset.get(name_playlist=weather.current_weather)
         except Exception as e:
             content = {
-                "detail": "Enter correct Latitude and Longitude",
+                "detail": "올바른 위도 / 경도를 입력하세요.",
             }
             return Response(content, status.HTTP_400_BAD_REQUEST)
         else:
@@ -112,7 +116,7 @@ class MainPlaylistListView(generics.ListAPIView):
                 "temperature": weather.temperature,
                 "listInfo": serializer.data,
             }
-            return Response(content, status.HTTP_202_ACCEPTED)
+            return Response(content, status.HTTP_200_OK)
 
 
 # User의 모든 playlists
@@ -126,13 +130,13 @@ class UserMusiclistRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
         ObjectIsRequestUser,
     )
 
-    # 개인이 가진 모든 플레이 리스트
+    # 개인 사용자의 모든 플레이 리스트
     def get(self, request, *args, **kwargs):
         try:
             user = self.get_queryset().get(pk=kwargs["pk"])
         except User.DoesNotExist as e:
             context = {
-                "detail": "user does not exists",
+                "detail": "사용자가 존재하지 않습니다.",
             }
             return Response(context, status=status.HTTP_404_NOT_FOUND)
         else:
@@ -155,17 +159,17 @@ class UserMusiclistRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
                 pl.add_musics_string(music_pks)
         except User.DoesNotExist as e:
             context = {
-                "detail": "User Does not exist",
+                "detail": "사용자가 존재하지 않습니다.",
             }
             return Response(context, status=status.HTTP_404_NOT_FOUND)
         except Music.DoesNotExist as e:
             context = {
-                "detail": "Music Does not exist",
+                "detail": "음원이 존재하지 않습니다.",
             }
             return Response(context, status=status.HTTP_404_NOT_FOUND)
         except TypeError or Playlist.DoesNotExist as e:
             context = {
-                "detail": "Enter Playlist Name",
+                "detail": "플레이리스트 이름을 입력하세요.",
             }
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
 
@@ -176,7 +180,7 @@ class UserMusiclistRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
             "detail": "Created",
             "lists": serializer.data,
         }
-        return Response(context, status=status.HTTP_202_ACCEPTED)
+        return Response(context, status=status.HTTP_200_OK)
 
     # Playlist 삭제
     def put(self, request, *args, **kwargs):
@@ -186,17 +190,17 @@ class UserMusiclistRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
             Playlist.objects.delete_playlists(delete_playlists)
         except User.DoesNotExist as e:
             context = {
-                "detail": "User does not exist",
+                "detail": "사용자가 존재하지 않습니다.",
             }
             return Response(context, status=status.HTTP_404_NOT_FOUND)
         except ValueError as e:
             context = {
-                "detail": "Enter Playlist PKs",
+                "detail": "플레이리스트 번호를 입력하세요.",
             }
             return Response(context, status=status.HTTP_404_NOT_FOUND)
         except Playlist.DoesNotExist as e:
             context = {
-                "detail": "Enter Right Playlist PKs",
+                "detail": "올바른 플레이리스트 번호를 입력하세요.",
             }
             return Response(context, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
@@ -206,10 +210,10 @@ class UserMusiclistRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
             return Response(context, status=status.HTTP_404_NOT_FOUND)
         else:
             context = {
-                "detail": "List Delete Success",
+                "detail": "플레이리스트를 삭제하였습니다.",
                 "list deleted": delete_playlists,
             }
-            return Response(context, status=status.HTTP_202_ACCEPTED)
+            return Response(context, status=status.HTTP_200_OK)
 
 
 # 개인 플레이리스트 디테일
@@ -219,7 +223,7 @@ class UserPlayListMusicsRetrieveDestroy(generics.RetrieveUpdateDestroyAPIView):
     parser_classes = (MultiPartParser, FormParser, JSONParser)
     permission_classes = (
         permissions.IsAuthenticated,
-        ObjectHasPermission,  # 내꺼
+        ObjectHasPermission,
     )
 
     def get(self, request, *args, **kwargs):
@@ -230,12 +234,12 @@ class UserPlayListMusicsRetrieveDestroy(generics.RetrieveUpdateDestroyAPIView):
             )
         except User.DoesNotExist as e:
             context = {
-                "detail": "User does not exists",
+                "detail": "사용자가 존재하지 않습니다.",
             }
             return Response(context, status=status.HTTP_404_NOT_FOUND)
         except Playlist.DoesNotExist as e:
             context = {
-                "detail": "Playlist Does not Exists"
+                "detail": "플레이리스트가 존재하지 않습니다."
             }
             return Response(context, status=status.HTTP_404_NOT_FOUND)
         else:
@@ -252,25 +256,25 @@ class UserPlayListMusicsRetrieveDestroy(generics.RetrieveUpdateDestroyAPIView):
             playlist.delete_musics_string(deleted_musics)
         except Playlist.DoesNotExist as e:
             context = {
-                "detail": "Playlist does not exsits",
+                "detail": "플레이리스트가 존재하지 않습니다.",
             }
             return Response(context, status=status.HTTP_404_NOT_FOUND)
         except Music.DoesNotExist as e:
             context = {
-                "detail": "Music does not exsists",
+                "detail": "음원이 존재하지 않습니다.",
             }
             return Response(context, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             context = {
-                "detail": "Enter Integer",
+                "detail": "숫자를 입력하세요.",
             }
             return Response(context, status=status.HTTP_406_NOT_ACCEPTABLE)
         queryset = Playlist.objects.get(pk=playlist.pk)
         context = {
-            "detail": "삭제 성공",
+            "detail": "플레이리스트 삭제에 성공하였습니다.",
             "playlist": self.serializer_class(queryset).data,
         }
-        return Response(context, status=status.HTTP_202_ACCEPTED)
+        return Response(context, status=status.HTTP_200_OK)
 
     def delete(self, request, *args, **kwargs):
         try:
@@ -279,13 +283,13 @@ class UserPlayListMusicsRetrieveDestroy(generics.RetrieveUpdateDestroyAPIView):
             queryset = Playlist.objects.get(user=user, pk=playlist.pk)
         except User.DoesNotExist as e:
             context = {
-                "detail": "User does not exists",
+                "detail": "사용자가 존재하지 않습니다.",
             }
             return Response(context, status=status.HTTP_404_NOT_FOUND)
 
         except Playlist.DoesNotExist as e:
             context = {
-                "detail": "Playlist Does not Exists"
+                "detail": "플레이리스트가 존재하지 않습니다."
             }
             return Response(context, status=status.HTTP_404_NOT_FOUND)
         queryset.delete()
@@ -293,7 +297,7 @@ class UserPlayListMusicsRetrieveDestroy(generics.RetrieveUpdateDestroyAPIView):
             "detail": "리스트가 삭제되었습니다."
         }
 
-        return Response(context, status=status.HTTP_202_ACCEPTED)  # 전체 playlist
+        return Response(context, status=status.HTTP_200_OK)  # 전체 playlist
 
 
 class PlaylistListCreateView(APIView):
@@ -316,5 +320,3 @@ class UserSharedListUpdate(generics.RetrieveUpdateDestroyAPIView):
             "Shared List": self.serializer_class(shared_list, many=True).data,
         }
         return Response(context, status=status.HTTP_200_OK)
-
-    pass

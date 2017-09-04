@@ -10,8 +10,6 @@ __all__ = (
     "MusicSerializer",
     "PlaylistSerializer",
     "UserPlaylistSerializer",
-    "RetrieveUpdateDestroyAPIView",
-
 )
 
 

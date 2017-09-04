@@ -46,7 +46,7 @@ class CustomAuthTokenView(APIView):
             django_login(request, user)
             return Response(
                 content,
-                status=status.HTTP_202_ACCEPTED
+                status=status.HTTP_200_OK
             )
         else:
             content = {
@@ -78,7 +78,7 @@ class UserLogoutView(APIView):
         content = {
             "detail": "로그아웃되었습니다.",
         }
-        return Response(content, status=status.HTTP_202_ACCEPTED)
+        return Response(content, status=status.HTTP_200_OK)
 
     def get(self, request):
         return self.logout(request)
